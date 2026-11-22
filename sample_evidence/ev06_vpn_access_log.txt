@@ -1,0 +1,4 @@
+2026-05-10T22:14:03Z user=rahul.v src=103.21.44.9 action=LOGIN result=SUCCESS
+2026-05-10T22:31:45Z user=rahul.v action=EXPORT table=clients rows=18250 dest=/tmp/clients.csv
+2026-05-10T22:33:12Z user=rahul.v action=UPLOAD dest=personal-drive bytes=4382110
+2026-05-10T22:40:00Z user=rahul.v action=LOGOUT

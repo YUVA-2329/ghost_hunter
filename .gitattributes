@@ -1,0 +1,4 @@
+# Sample evidence must stay byte-identical on every OS, otherwise its SHA-256
+# changes (e.g. CRLF conversion on Windows) and all demo evidence would look TAMPERED.
+sample_evidence/* binary
+*.sql text eol=lf

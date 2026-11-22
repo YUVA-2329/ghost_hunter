@@ -1,0 +1,35 @@
+# secrets
+.env
+.env.*
+!.env.example
+# virtual environments
+.venv/
+venv/
+env/
+# python cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+# uploaded evidence & runtime storage
+storage/*
+!storage/.gitkeep
+# generated reports
+reports/
+*.report.html
+# local database backups
+*.sql.gz
+*.dump
+backups/
+# model files
+models/
+*.gguf
+*.bin
+*.joblib
+# temporary / OS files
+*.tmp
+*.part
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

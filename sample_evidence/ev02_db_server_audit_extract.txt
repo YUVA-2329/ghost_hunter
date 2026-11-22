@@ -1,0 +1,5 @@
+[2026-03-14 01:52:10] mysqld: connect user=svc_payroll host=10.0.4.23
+[2026-03-14 01:53:44] query: UPDATE payroll SET base_salary=152000 WHERE employee_id=1093
+[2026-03-14 01:54:02] query: UPDATE payroll SET bonus=48000 WHERE employee_id=1093
+[2026-03-14 01:55:31] query: DELETE FROM payroll_approvals WHERE employee_id=1093
+[2026-03-14 01:56:09] mysqld: disconnect user=svc_payroll

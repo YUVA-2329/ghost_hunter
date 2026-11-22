@@ -1,0 +1,104 @@
+services:
+  # ----------------------------------------------------------------------------
+  # MySQL 8.0 Forensic Relational Database
+  # ----------------------------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: sql-ghost-hunter-mysql
+    command: >
+      --default-authentication-plugin=caching_sha2_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --explicit_defaults_for_timestamp=1
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ADMIN_PASSWORD:-Admin@Ghost2026}
+      MYSQL_DATABASE: ${DB_NAME:-ghost_hunter}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    networks:
+      - ghost_network
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------------------
+  # SQL Ghost Hunter - FastAPI Backend & Frontend Application Server
+  # ----------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sql-ghost-hunter-app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-ghost_hunter}
+      DB_ADMIN_USER: root
+      DB_ADMIN_PASSWORD: ${DB_ADMIN_PASSWORD:-Admin@Ghost2026}
+      DB_APP_USER: ghost_app
+      DB_APP_PASSWORD: ${DB_APP_PASSWORD:-GhostApp@Secure2026}
+      APP_HOST: "0.0.0.0"
+      APP_PORT: 8000
+      COOKIE_SECURE: "false"
+      MAX_UPLOAD_MB: 20
+      SESSION_HOURS: 8
+      AI_ENABLED: ${AI_ENABLED:-true}
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2:3b}
+      OLLAMA_TIMEOUT_SECONDS: 60
+      ANALYSIS_LOOKBACK_DAYS: 30
+      AUTO_ANALYSIS_MINUTES: 10
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - evidence_storage:/app/storage
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 25s
+    networks:
+      - ghost_network
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------------------
+  # (Optional) Containerized Ollama LLM Service
+  # Run with: docker compose --profile ai up -d
+  # ----------------------------------------------------------------------------
+  ollama:
+    image: ollama/ollama:latest
+    container_name: sql-ghost-hunter-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    networks:
+      - ghost_network
+    profiles:
+      - ai
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+    name: sql_ghost_hunter_mysql_data
+  evidence_storage:
+    name: sql_ghost_hunter_evidence_storage
+  ollama_models:
+    name: sql_ghost_hunter_ollama_models
+
+networks:
+  ghost_network:
+    name: sql_ghost_hunter_network
+    driver: bridge
