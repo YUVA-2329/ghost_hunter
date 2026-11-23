@@ -1,6 +1,0 @@
-Return-Path: <it-support@micr0soft-helpdesk.com>
-Received: from mail.micr0soft-helpdesk.com (185.244.25.10)
-From: "IT Support" <it-support@micr0soft-helpdesk.com>
-To: finance-team@example.org
-Subject: Urgent: Password expires today - verify now
-Authentication-Results: spf=fail dkim=none dmarc=fail

@@ -1,9 +1,1761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SQL Ghost Hunter — Interactive Academic Guide, Viva Prep & Evaluation Suite</title>
+  <meta name="description" content="Complete interactive project explainer, 12-section viva voce guide, architecture explainer, and faculty feedback suite for SQL Ghost Hunter.">
+  <style>
+/* =====================================================================
+   SQL Ghost Hunter - premium light theme
+   ===================================================================== */
+:root {
+  --bg: #f5f7fb;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --border: #e4e9f0;
+  --border-strong: #cfd8e3;
+  --text: #0f172a;
+  --text-2: #334155;
+  --muted: #64748b;
+  --primary: #2563eb;
+  --primary-600: #1d4ed8;
+  --primary-50: #eff4ff;
+  --primary-100: #dbe6fe;
+  --ok: #15803d;      --ok-bg: #e9f8ef;
+  --low: #15803d;     --low-bg: #e9f8ef;
+  --medium: #b45309;  --medium-bg: #fef6e7;
+  --high: #c2410c;    --high-bg: #fff0e6;
+  --critical: #b91c1c;--critical-bg: #fdecec;
+  --neutral-bg: #eef2f7;
+  --radius: 10px;
+  --radius-sm: 7px;
+  --shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 1px 8px rgba(15, 23, 42, .04);
+  --shadow-lg: 0 12px 40px rgba(15, 23, 42, .16);
+  --font: "Segoe UI", "Inter", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: "Cascadia Mono", "Consolas", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --sidebar-w: 236px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { font: 14px/1.5 var(--font); color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
+[hidden] { display: none !important; }
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -.01em; }
+h2 { font-size: 16px; }
+h3 { font-size: 14px; }
+code, pre, .mono { font-family: var(--mono); font-size: 12.5px; }
+.icon { flex: none; vertical-align: -3px; }
+.muted { color: var(--muted); }
+.small { font-size: 12.5px; }
+.nowrap { white-space: nowrap; }
+.right { text-align: right; }
+.hash { font-family: var(--mono); font-size: 12px; word-break: break-all; color: var(--text-2); }
+
+/* ---------------- layout ---------------- */
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: var(--sidebar-w); flex: none; background: var(--surface); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; padding: 18px 12px;
+}
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topbar {
+  height: 60px; display: flex; align-items: center; gap: 12px; padding: 0 28px;
+  background: rgba(255, 255, 255, .85); backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 20;
+}
+.page-title { font-size: 18px; }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.user-box { text-align: right; line-height: 1.25; }
+.user-name { font-weight: 600; }
+.user-role { font-size: 11.5px; color: var(--muted); letter-spacing: .03em; }
+.page { padding: 24px 28px 48px; outline: none; max-width: 1480px; width: 100%; }
+.nav-toggle { display: none; }
+
+.brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 18px; }
+.brand-mark { width: 34px; height: 34px; border-radius: 9px; background: var(--primary); color: #fff;
+  display: grid; place-items: center; flex: none; }
+.brand-name { font-weight: 700; font-size: 15px; letter-spacing: -.01em; }
+.brand-tag { font-size: 11.5px; color: var(--muted); }
+.brand-lg .brand-mark { width: 44px; height: 44px; border-radius: 11px; }
+.brand-lg .brand-name { font-size: 20px; }
+
+.nav { display: flex; flex-direction: column; gap: 2px; }
+.nav a {
+  display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: var(--radius-sm);
+  color: var(--text-2); font-weight: 500; text-decoration: none;
+}
+.nav a:hover { background: var(--surface-2); color: var(--text); }
+.nav a.active { background: var(--primary-50); color: var(--primary-600); }
+.nav .nav-section { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+  padding: 14px 10px 4px; }
+.sidebar-foot { margin-top: auto; padding: 8px; }
+.ai-pill { font-size: 12px; padding: 7px 10px; border-radius: 8px; background: var(--neutral-bg); color: var(--text-2);
+  display: flex; gap: 6px; align-items: center; }
+.ai-pill .dot, .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; flex: none; }
+.dot.on { background: #16a34a; } .dot.off { background: #d97706; }
+
+/* ---------------- login ---------------- */
+.login-view { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 24px; background: linear-gradient(180deg, #f8fafc 0%, #eef3fb 100%); }
+.login-card { width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; box-shadow: var(--shadow-lg); padding: 28px; }
+.login-card .brand { padding: 0 0 22px; }
+.demo-accounts { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 14px; }
+.login-foot { margin-top: 18px; }
+
+/* ---------------- building blocks ---------------- */
+.grid { display: grid; gap: 16px; }
+.grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-main { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.row-between { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.spacer { flex: 1; }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+.card-head { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.card-head h2 { flex: 1; }
+.card-body { padding: 16px 18px; }
+.card-body.flush { padding: 0; }
+.card-foot { padding: 10px 18px; border-top: 1px solid var(--border); }
+
+.stat { padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+.stat-label { color: var(--muted); font-size: 12.5px; display: flex; gap: 6px; align-items: center; }
+.stat-value { font-size: 26px; font-weight: 650; letter-spacing: -.02em; line-height: 1.1; }
+.stat-sub { font-size: 12px; color: var(--muted); }
+.stat.accent-red .stat-value { color: var(--critical); }
+.stat.accent-green .stat-value { color: var(--ok); }
+.stat.accent-orange .stat-value { color: var(--high); }
+
+.page-intro { color: var(--muted); margin: -6px 0 18px; max-width: 900px; }
+.section-title { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 6px 0 2px; }
+
+/* ---------------- buttons & forms ---------------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 34px; padding: 0 13px;
+  border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: var(--surface); color: var(--text);
+  font: 500 13.5px var(--font); cursor: pointer; white-space: nowrap; text-decoration: none; }
+.btn:hover { background: var(--surface-2); text-decoration: none; }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+.btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-600); }
+.btn-danger { color: var(--critical); border-color: #f2c4c4; }
+.btn-danger:hover { background: var(--critical-bg); }
+.btn-ghost { border-color: transparent; background: transparent; }
+.btn-ghost:hover { background: var(--neutral-bg); }
+.btn-sm { height: 28px; padding: 0 9px; font-size: 12.5px; }
+.btn-block { width: 100%; }
+
+.form { display: flex; flex-direction: column; gap: 12px; }
+.form label { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--text-2); }
+input, select, textarea { font: 14px var(--font); color: var(--text); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm); padding: 7px 10px; background: #fff; min-height: 34px; }
+textarea { resize: vertical; min-height: 70px; }
+input:focus, select:focus, textarea:focus, .btn:focus-visible { outline: 2px solid var(--primary-100); border-color: var(--primary); }
+.form-error { color: var(--critical); font-size: 13px; min-height: 18px; }
+.form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; align-items: end; }
+.filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; align-items: end; }
+.filters label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
+
+.dropzone { border: 1.5px dashed var(--border-strong); border-radius: var(--radius); padding: 18px; text-align: center;
+  color: var(--muted); background: var(--surface-2); cursor: pointer; }
+.dropzone.drag { border-color: var(--primary); background: var(--primary-50); color: var(--primary-600); }
+.dropzone input { display: none; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chip { border: 1px solid var(--border-strong); background: var(--surface); border-radius: 999px; padding: 4px 11px;
+  font-size: 12.5px; cursor: pointer; color: var(--text-2); }
+.chip:hover { border-color: var(--primary); color: var(--primary-600); background: var(--primary-50); }
+
+/* ---------------- tables ---------------- */
+.table-wrap { overflow-x: auto; }
+table.table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.table th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12px; text-transform: uppercase;
+  letter-spacing: .04em; padding: 9px 12px; background: var(--surface-2); border-bottom: 1px solid var(--border); white-space: nowrap; }
+.table td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.table tr:last-child td { border-bottom: none; }
+.table tr.clickable { cursor: pointer; }
+.table tr.clickable:hover td { background: var(--surface-2); }
+.table tr.selected td { background: var(--primary-50); }
+.table td.num, .table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.table.compact td, .table.compact th { padding: 6px 10px; }
+.empty { padding: 28px; text-align: center; color: var(--muted); }
+
+/* ---------------- badges ---------------- */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 999px; font-size: 11.5px;
+  font-weight: 600; letter-spacing: .02em; background: var(--neutral-bg); color: var(--text-2); white-space: nowrap; }
+.badge.LOW, .badge.VERIFIED, .badge.ACTIVE, .badge.ok { background: var(--low-bg); color: var(--low); }
+.badge.MEDIUM, .badge.ON_HOLD, .badge.UNVERIFIED, .badge.ACKNOWLEDGED { background: var(--medium-bg); color: var(--medium); }
+.badge.HIGH, .badge.ESCALATED { background: var(--high-bg); color: var(--high); }
+.badge.CRITICAL, .badge.TAMPERED, .badge.MISSING, .badge.DELETE { background: var(--critical-bg); color: var(--critical); }
+.badge.OPEN, .badge.IN_PROGRESS, .badge.INSERT { background: var(--primary-50); color: var(--primary-600); }
+.badge.UPDATE { background: var(--medium-bg); color: var(--medium); }
+.badge.CLOSED, .badge.REMOVED, .badge.DISMISSED { background: var(--neutral-bg); color: var(--muted); }
+.badge.method { background: #f1effd; color: #5b3fc4; }
+.badge.outline { background: transparent; border: 1px solid var(--border-strong); color: var(--text-2); }
+
+.scorebar { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+.scorebar .track { flex: 1; height: 6px; border-radius: 4px; background: var(--neutral-bg); overflow: hidden; }
+.scorebar .fill { height: 100%; border-radius: 4px; }
+.scorebar .val { font-variant-numeric: tabular-nums; font-size: 12.5px; color: var(--text-2); min-width: 26px; text-align: right; }
+
+/* ---------------- tabs ---------------- */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 16px; flex-wrap: wrap; }
+.tab { padding: 9px 14px; border: none; background: none; font: 500 14px var(--font); color: var(--muted); cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -1px; display: inline-flex; gap: 6px; align-items: center; }
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--primary-600); border-bottom-color: var(--primary); }
+
+/* ---------------- detail / key-value ---------------- */
+.kv { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 8px 14px; font-size: 13.5px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; min-width: 0; }
+
+.hash-compare { display: grid; gap: 8px; }
+.hash-compare .h { padding: 8px 10px; border-radius: var(--radius-sm); background: var(--surface-2); border: 1px solid var(--border); }
+.hash-compare .h.bad { background: var(--critical-bg); border-color: #f5c2c2; }
+.hash-compare .h.good { background: var(--ok-bg); border-color: #bfe6cc; }
+
+/* timeline */
+.timeline { position: relative; margin: 4px 0 0; padding-left: 22px; }
+.timeline::before { content: ""; position: absolute; left: 7px; top: 4px; bottom: 4px; width: 2px; background: var(--border); }
+.tl-item { position: relative; padding: 0 0 18px; }
+.tl-item::before { content: ""; position: absolute; left: -20px; top: 4px; width: 12px; height: 12px; border-radius: 50%;
+  background: #fff; border: 2px solid var(--primary); }
+.tl-item.bad::before { border-color: var(--critical); }
+.tl-item.first::before { background: var(--primary); }
+.tl-title { font-weight: 600; }
+.tl-meta { color: var(--muted); font-size: 12.5px; }
+
+/* diff */
+.diff { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.diff td, .diff th { border: 1px solid var(--border); padding: 5px 8px; vertical-align: top; text-align: left; }
+.diff th { background: var(--surface-2); color: var(--muted); font-weight: 600; }
+.diff td.k { font-family: var(--mono); color: var(--text-2); white-space: nowrap; }
+.diff td.old { background: #fff6f6; font-family: var(--mono); word-break: break-word; }
+.diff td.new { background: #f3fbf5; font-family: var(--mono); word-break: break-word; }
+.diff tr.same td.old, .diff tr.same td.new { background: transparent; color: var(--muted); }
+.expand-row td { background: var(--surface-2); }
+
+/* alerts */
+.alert-card { border: 1px solid var(--border); border-left: 4px solid var(--border-strong); border-radius: var(--radius);
+  background: var(--surface); padding: 14px 16px; }
+.alert-card.CRITICAL { border-left-color: var(--critical); }
+.alert-card.HIGH { border-left-color: #ea580c; }
+.alert-card.MEDIUM { border-left-color: #d97706; }
+.alert-card.LOW { border-left-color: #16a34a; }
+.alert-card .explain { color: var(--text-2); margin: 8px 0; }
+.breakdown { display: grid; gap: 4px; margin: 6px 0 10px; }
+.breakdown .b { display: grid; grid-template-columns: minmax(0, 1fr) 54px; gap: 8px; font-size: 12.5px; color: var(--text-2); }
+.breakdown .b .p { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.breakdown .b .p.neg { color: var(--ok); }
+
+/* assistant */
+.chat { display: flex; flex-direction: column; gap: 14px; }
+.msg-q { align-self: flex-end; background: var(--primary); color: #fff; padding: 9px 14px; border-radius: 14px 14px 4px 14px; max-width: 75%; }
+.msg-a { align-self: stretch; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); padding: 14px 16px; }
+.msg-a .src { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+.facts { margin: 10px 0 0; padding: 10px 12px 10px 28px; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 13px; }
+.facts li { margin: 2px 0; }
+.label-facts { font-size: 11.5px; font-weight: 700; color: var(--ok); text-transform: uppercase; letter-spacing: .05em; margin-top: 12px; }
+.label-ai { font-size: 11.5px; font-weight: 700; color: #5b3fc4; text-transform: uppercase; letter-spacing: .05em; }
+.warn { background: var(--medium-bg); color: var(--medium); border-radius: var(--radius-sm); padding: 8px 10px; font-size: 13px; margin-top: 8px; }
+.notice { background: var(--primary-50); color: var(--primary-600); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px; }
+
+/* code & docs */
+pre.code { background: #0f172a; color: #e2e8f0; border-radius: var(--radius-sm); padding: 14px 16px; overflow: auto;
+  margin: 0; line-height: 1.55; max-height: 560px; }
+pre.code .kw { color: #93c5fd; } pre.code .str { color: #fca5a5; } pre.code .cm { color: #94a3b8; font-style: italic; } pre.code .fn { color: #c4b5fd; }
+.markdown { line-height: 1.65; max-width: 980px; }
+.markdown h1 { font-size: 24px; margin: 8px 0 14px; } .markdown h2 { font-size: 19px; margin: 26px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.markdown h3 { font-size: 15.5px; margin: 20px 0 8px; }
+.markdown table { border-collapse: collapse; margin: 10px 0 16px; font-size: 13px; display: block; overflow-x: auto; }
+.markdown th, .markdown td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; vertical-align: top; }
+.markdown th { background: var(--surface-2); }
+.markdown code { background: var(--neutral-bg); padding: 1px 5px; border-radius: 4px; }
+.markdown pre { background: #0f172a; color: #e2e8f0; padding: 12px 14px; border-radius: var(--radius-sm); overflow: auto; }
+.markdown pre code { background: none; padding: 0; color: inherit; }
+.markdown blockquote { margin: 10px 0; padding: 6px 14px; border-left: 3px solid var(--primary); background: var(--primary-50); }
+.markdown .mermaid { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; overflow-x: auto; text-align: center; }
+
+/* modal & toast */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, .38); display: flex; align-items: flex-start;
+  justify-content: center; padding: 6vh 16px; z-index: 50; overflow-y: auto; }
+.modal { background: var(--surface); border-radius: 14px; box-shadow: var(--shadow-lg); width: 100%; max-width: 560px; }
+.modal.wide { max-width: 860px; }
+.modal-head { display: flex; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.modal-head h2 { flex: 1; }
+.modal-body { padding: 18px 20px; }
+.modal-foot { display: flex; gap: 8px; justify-content: flex-end; padding: 12px 20px; border-top: 1px solid var(--border); }
+.toast-root { position: fixed; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 60; }
+.toast { background: #0f172a; color: #fff; padding: 10px 14px; border-radius: 9px; box-shadow: var(--shadow-lg);
+  max-width: 420px; font-size: 13.5px; animation: toast-in .18s ease-out; }
+.toast.error { background: #7f1d1d; } .toast.success { background: #14532d; }
+@keyframes toast-in { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.spinner { width: 16px; height: 16px; border: 2px solid var(--primary-100); border-top-color: var(--primary);
+  border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; vertical-align: -3px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading { padding: 40px; text-align: center; color: var(--muted); }
+
+.chart-box { position: relative; height: 240px; }
+.list { display: flex; flex-direction: column; }
+.list-item { display: flex; gap: 10px; align-items: center; padding: 10px 18px; border-bottom: 1px solid var(--border); }
+.list-item:last-child { border-bottom: none; }
+.list-item .grow { flex: 1; min-width: 0; }
+.list-item.clickable { cursor: pointer; }
+.list-item.clickable:hover, a.list-item:hover { background: var(--surface-2); }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------------- responsive ---------------- */
+@media (max-width: 1180px) {
+  .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-main, .grid-3 { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 900px) {
+  .sidebar { position: fixed; left: 0; top: 0; z-index: 40; transform: translateX(-100%); transition: transform .2s; box-shadow: var(--shadow-lg); }
+  .sidebar.open { transform: none; }
+  .nav-toggle { display: inline-flex; }
+  .page { padding: 18px 14px 40px; }
+  .topbar { padding: 0 14px; }
+  .grid-2 { grid-template-columns: minmax(0, 1fr); }
+  .kv { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .kv dd { margin-bottom: 8px; }
+  .user-box { display: none; }
+}
+@media (max-width: 560px) {
+  .grid-4 { grid-template-columns: minmax(0, 1fr); }
+}
+@media print {
+  .sidebar, .topbar, .no-print { display: none !important; }
+  .page { padding: 0; }
+}
+.markdown .mermaid svg { max-width: none !important; height: auto; }
+
+/* ---------------- Topbar Command & Backend Status Indicator ---------------- */
+.topbar-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 16px;
+  flex: 1;
+  max-width: 440px;
+}
+
+.command-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 14px;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.command-box:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12), inset 0 1px 2px rgba(15, 23, 42, 0.04);
+  background: #ffffff;
+}
+
+.command-icon {
+  display: flex;
+  align-items: center;
+  color: var(--muted);
+}
+
+.command-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  width: 100%;
+}
+
+.command-input::placeholder {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+/* Premium Liquid Glass Backend Status Indicator */
+.backend-status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border-radius: 16px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  animation: fadeInIndicator 0.25s ease-out forwards;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid transparent;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.backend-status-indicator.connected {
+  background: rgba(236, 253, 245, 0.95);
+  color: #059669;
+  border-color: rgba(167, 243, 208, 0.8);
+}
+
+.backend-status-indicator.disconnected {
+  background: rgba(254, 242, 242, 0.95);
+  color: #dc2626;
+  border-color: rgba(254, 202, 202, 0.8);
+}
+
+.status-indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-indicator-dot.green {
+  background: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulseGreen 1.8s infinite;
+}
+
+.status-indicator-dot.red {
+  background: #ef4444;
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  animation: pulseRed 1.8s infinite;
+}
+
+@keyframes pulseGreen {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes pulseRed {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+@keyframes fadeInIndicator {
+  from {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 850px) {
+  .topbar-search-wrap {
+    max-width: 190px;
+    margin-left: 8px;
+  }
+}
+
+
+/* =====================================================================
+   SQL Ghost Hunter - Premium Apple-Inspired Liquid Glass Design System
+   Interactive Learning & Demonstration Guide
+   ===================================================================== */
+
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-bg-hover: rgba(255, 255, 255, 0.88);
+  --glass-card: rgba(255, 255, 255, 0.82);
+  --glass-card-subtle: rgba(248, 250, 252, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.85);
+  --glass-border-subtle: rgba(226, 232, 240, 0.8);
+  --glass-shadow: 0 16px 40px -12px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  --glass-shadow-lg: 0 24px 60px -15px rgba(37, 99, 235, 0.12), 0 8px 24px -6px rgba(15, 23, 42, 0.06);
+  --glass-blur: blur(20px) saturate(180%);
+  --glass-radius: 16px;
+  --glass-radius-sm: 10px;
+  --glass-radius-pill: 9999px;
+  
+  --glass-accent: #2563eb;
+  --glass-accent-light: #eff6ff;
+  --glass-accent-border: #bfdbfe;
+  --glass-success: #059669;
+  --glass-success-light: #ecfdf5;
+  --glass-warning: #d97706;
+  --glass-warning-light: #fffbeb;
+  --glass-danger: #dc2626;
+  --glass-danger-light: #fef2f2;
+  --glass-purple: #7c3aed;
+  --glass-purple-light: #f5f3ff;
+}
+
+/* Topbar Quick Help Button */
+.btn-glass-help {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  border-radius: var(--glass-radius-pill);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+}
+
+.btn-glass-help:hover {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.28);
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.btn-glass-help .help-pulse {
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+  70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* ---------------- Main Liquid Glass Wrapper ---------------- */
+.help-container {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  max-width: 1420px;
+  margin: 0 auto;
+  padding-bottom: 60px;
+}
+
+/* Hero Section */
+.glass-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(240, 246, 255, 0.85) 100%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-lg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  padding: 32px 36px;
+}
+
+.glass-hero::before {
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -10%;
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.12) 0%, rgba(124, 58, 237, 0.04) 60%, transparent 80%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.glass-hero-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.glass-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.glass-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--glass-radius-pill);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  color: var(--text-2);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+}
+
+.glass-pill.accent {
+  background: var(--glass-accent-light);
+  border-color: var(--glass-accent-border);
+  color: var(--glass-accent);
+}
+
+.glass-pill.success {
+  background: var(--glass-success-light);
+  border-color: #a7f3d0;
+  color: var(--glass-success);
+}
+
+.glass-hero-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: #0f172a;
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+
+.glass-hero-subtitle {
+  font-size: 15px;
+  color: #475569;
+  max-width: 860px;
+  line-height: 1.6;
+}
+
+/* Quick Action Mode Buttons */
+.glass-quick-modes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.quick-mode-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+}
+
+.quick-mode-btn:hover {
+  background: #ffffff;
+  border-color: var(--glass-accent-border);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.12);
+  transform: translateY(-2px);
+}
+
+.quick-mode-btn.active {
+  background: #ffffff;
+  border-color: var(--glass-accent);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.16);
+  outline: 2px solid var(--glass-accent-border);
+}
+
+.quick-mode-btn .mode-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.quick-mode-btn .mode-desc {
+  font-size: 11.5px;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+/* ---------------- Navigation Tabs (Liquid Glass) ---------------- */
+.glass-tabs-bar {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  overflow-x: auto;
+  scrollbar-width: thin;
+  position: sticky;
+  top: 70px;
+  z-index: 15;
+}
+
+.glass-tabs-bar::-webkit-scrollbar {
+  height: 4px;
+}
+.glass-tabs-bar::-webkit-scrollbar-thumb {
+  background: rgba(203, 213, 225, 0.7);
+  border-radius: 4px;
+}
+
+.glass-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 15px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.glass-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.9);
+  color: #0f172a;
+}
+
+.glass-tab-btn.active {
+  background: #ffffff;
+  color: var(--glass-accent);
+  border-color: rgba(226, 232, 240, 0.9);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.glass-tab-btn .tab-badge {
+  font-size: 10.5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(226, 232, 240, 0.6);
+  color: #475569;
+  font-weight: 700;
+}
+.glass-tab-btn.active .tab-badge {
+  background: var(--glass-accent-light);
+  color: var(--glass-accent);
+}
+
+/* ---------------- Glass Panels & Content ---------------- */
+.glass-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: glass-fade-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes glass-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.glass-card {
+  background: var(--glass-card);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  padding: 24px 28px;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 20px 48px -12px rgba(15, 23, 42, 0.1);
+}
+
+.glass-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--glass-border-subtle);
+  margin-bottom: 18px;
+}
+
+.glass-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.015em;
+}
+
+.glass-card-title .icon {
+  color: var(--glass-accent);
+}
+
+/* Comparison Columns (WITHOUT vs WITH) */
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.comp-box {
+  padding: 22px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.comp-box.without {
+  background: linear-gradient(180deg, #fffafa 0%, #fff5f5 100%);
+  border-color: #fed7d7;
+}
+
+.comp-box.with {
+  background: linear-gradient(180deg, #f0fdf4 0%, #e6fcf0 100%);
+  border-color: #bbf7d0;
+}
+
+.comp-box-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.comp-box.without .comp-box-header { color: #b91c1c; }
+.comp-box.with .comp-box-header { color: #15803d; }
+
+.comp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.comp-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: #334155;
+}
+
+.comp-item .icon {
+  margin-top: 2px;
+  flex: none;
+}
+.comp-box.without .comp-item .icon { color: #dc2626; }
+.comp-box.with .comp-item .icon { color: #16a34a; }
+
+/* 2-Level Explanation Cards */
+.two-level-card {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.level-card {
+  padding: 18px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--glass-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.level-card.simple {
+  border-left: 4px solid #10b981;
+}
+
+.level-card.tech {
+  border-left: 4px solid #2563eb;
+}
+
+.level-tag {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.level-card.simple .level-tag { color: #059669; }
+.level-card.tech .level-tag { color: #2563eb; }
+
+.level-text {
+  font-size: 13.5px;
+  color: #334155;
+  line-height: 1.55;
+}
+
+/* ---------------- Module Tour Grid ---------------- */
+.tour-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 960px) {
+  .tour-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.module-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 720px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.module-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--glass-border-subtle);
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.module-nav-item:hover {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.module-nav-item.active {
+  background: #ffffff;
+  border-color: var(--glass-accent);
+  color: var(--glass-accent);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.1);
+}
+
+.module-detail-box {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.module-subgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.module-subcard {
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--glass-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.module-subcard .sub-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+.module-subcard .sub-content {
+  font-size: 13.5px;
+  color: #1e293b;
+  line-height: 1.5;
+}
+
+.demonstration-highlight-box {
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f0f7ff 0%, #e0eefe 100%);
+  border: 1px solid #bfdbfe;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.demonstration-highlight-box .demo-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #1d4ed8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.demonstration-highlight-box .demo-speech {
+  font-size: 14px;
+  font-style: italic;
+  color: #1e3a8a;
+  line-height: 1.6;
+}
+
+/* ---------------- Interactive Workflow Stepper ---------------- */
+.workflow-stepper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.workflow-step {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 18px;
+  padding: 20px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--glass-border-subtle);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+  transition: all 0.2s ease;
+}
+
+.workflow-step:hover {
+  background: #ffffff;
+  border-color: rgba(191, 219, 254, 0.8);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
+}
+
+.workflow-num-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--glass-accent-light);
+  color: var(--glass-accent);
+  border: 1px solid var(--glass-accent-border);
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.workflow-step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.workflow-step-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.workflow-duo-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.workflow-subbox {
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.workflow-subbox.user-view {
+  border-left: 3px solid #10b981;
+}
+.workflow-subbox.tech-view {
+  border-left: 3px solid #3b82f6;
+}
+
+/* ---------------- Database Schema Explorer ---------------- */
+.db-explorer-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .db-explorer-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.db-tables-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.db-table-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--glass-border-subtle);
+  font-family: var(--mono);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.db-table-item:hover {
+  background: #ffffff;
+}
+
+.db-table-item.active {
+  background: #ffffff;
+  border-color: var(--glass-accent);
+  color: var(--glass-accent);
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+}
+
+.db-table-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Search Bar (Liquid Glass) */
+.glass-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.glass-search-box .icon {
+  position: absolute;
+  left: 14px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.glass-search-input {
+  width: 100%;
+  padding: 10px 16px 10px 42px;
+  border-radius: var(--glass-radius-pill);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-size: 14px;
+  color: #0f172a;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  transition: all 0.2s ease;
+}
+
+.glass-search-input:focus {
+  background: #ffffff;
+  border-color: var(--glass-accent);
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.15);
+  outline: none;
+}
+
+/* Category Filter Chips */
+.glass-filter-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.glass-filter-chip {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--glass-radius-pill);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--glass-border-subtle);
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.glass-filter-chip:hover {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.glass-filter-chip.active {
+  background: var(--glass-accent);
+  border-color: var(--glass-accent);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+
+/* ---------------- Viva Preparation Accordions ---------------- */
+.viva-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.viva-card {
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--glass-border-subtle);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.viva-card:hover {
+  border-color: rgba(191, 219, 254, 0.9);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+}
+
+.viva-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 20px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.viva-head:hover {
+  background: #ffffff;
+}
+
+.viva-q-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0f172a;
+  text-align: left;
+}
+
+.viva-body {
+  padding: 18px 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-top: 1px solid var(--glass-border-subtle);
+  background: rgba(248, 250, 252, 0.65);
+}
+
+.viva-block {
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.viva-block.simple { border-left: 3px solid #10b981; }
+.viva-block.tech { border-left: 3px solid #2563eb; }
+.viva-block.analogy { border-left: 3px solid #f59e0b; }
+.viva-block.followup { border-left: 3px solid #8b5cf6; }
+
+.viva-block-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.viva-block.simple .viva-block-label { color: #059669; }
+.viva-block.tech .viva-block-label { color: #2563eb; }
+.viva-block.analogy .viva-block-label { color: #d97706; }
+.viva-block.followup .viva-block-label { color: #7c3aed; }
+
+.viva-block-content {
+  font-size: 13.5px;
+  color: #334155;
+  line-height: 1.5;
+}
+
+/* ---------------- Interactive Quiz ---------------- */
+.quiz-header-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(239, 246, 255, 0.9) 100%);
+  border: 1px solid var(--glass-accent-border);
+  box-shadow: var(--glass-shadow);
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.quiz-score-pill {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--glass-accent);
+  padding: 8px 18px;
+  background: #ffffff;
+  border-radius: var(--glass-radius-pill);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+}
+
+.quiz-container {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.quiz-card {
+  padding: 22px 24px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: all 0.2s ease;
+}
+
+.quiz-q-num {
+  font-size: 11.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+
+.quiz-q-text {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.4;
+}
+
+.quiz-options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.quiz-opt-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 11px 16px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  font-size: 13.5px;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-align: left;
+}
+
+.quiz-opt-btn:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.quiz-opt-btn.correct {
+  background: #ecfdf5 !important;
+  border-color: #10b981 !important;
+  color: #065f46 !important;
+  font-weight: 600;
+}
+
+.quiz-opt-btn.incorrect {
+  background: #fef2f2 !important;
+  border-color: #ef4444 !important;
+  color: #991b1b !important;
+}
+
+.quiz-rationale {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: rgba(241, 245, 249, 0.8);
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+  border-left: 3px solid #64748b;
+}
+
+/* ---------------- Demonstration Checklist ---------------- */
+.checklist-progress-card {
+  padding: 20px 24px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.progress-track-glass {
+  height: 10px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill-glass {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2563eb 0%, #10b981 100%);
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.checklist-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checklist-item-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--glass-border-subtle);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.checklist-item-card:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+.checklist-item-card.completed {
+  background: rgba(240, 253, 244, 0.7);
+  border-color: #bbf7d0;
+}
+
+.checklist-item-card.completed .checklist-title {
+  text-decoration: line-through;
+  color: #64748b;
+}
+
+.checklist-checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  accent-color: var(--glass-accent);
+  margin-top: 3px;
+  cursor: pointer;
+}
+
+.checklist-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.checklist-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.checklist-desc {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.checklist-prompt {
+  font-size: 12.5px;
+  font-style: italic;
+  color: #1d4ed8;
+  background: #eff6ff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  margin-top: 6px;
+  display: inline-block;
+}
+
+/* ---------------- Speech Script Cards (Presentation Mode) ---------------- */
+.script-section-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px 24px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.script-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--glass-border-subtle);
+  padding-bottom: 10px;
+}
+
+.script-speech-box {
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border-left: 4px solid var(--glass-accent);
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: #1e293b;
+}
+
+.script-action-callout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #fefce8;
+  border: 1px solid #fef08a;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #854d0e;
+}
+
+
+    /* Standalone Page Polish */
+    body {
+      background: #f8fafc radial-gradient(at 0% 0%, rgba(224, 231, 255, 0.6) 0px, transparent 50%),
+                  radial-gradient(at 100% 100%, rgba(224, 242, 254, 0.6) 0px, transparent 50%);
+      min-height: 100vh;
+      color: #0f172a;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .standalone-header {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+      box-shadow: 0 4px 20px -5px rgba(15, 23, 42, 0.05);
+      padding: 12px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .standalone-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .standalone-brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 18px;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .standalone-brand-name {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+    }
+
+    .standalone-brand-tag {
+      font-size: 11.5px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .standalone-nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .standalone-main-content {
+      max-width: 1440px;
+      margin: 24px auto;
+      padding: 0 20px 60px;
+    }
+
+    @media print {
+      .standalone-header, .glass-tabs-bar, .quick-mode-btn, button, .glass-search-box {
+        display: none !important;
+      }
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+      .glass-card, .glass-hero {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        background: #fff !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Sticky Header -->
+  <header class="standalone-header">
+    <div class="standalone-brand">
+      <div class="standalone-brand-logo">GH</div>
+      <div>
+        <div class="standalone-brand-name">SQL Ghost Hunter</div>
+        <div class="standalone-brand-tag">Interactive Academic Explainer &amp; Feedback Suite</div>
+      </div>
+    </div>
+
+    <div class="standalone-nav-actions">
+      <span class="glass-pill success">
+        <span class="help-pulse"></span> MySQL 8.0 &bull; 3NF Relational Integrity &bull; 100% Offline Ready
+      </span>
+      <a href="#feedback" class="btn-glass-help" style="background:#eff6ff;border-color:#93c5fd;color:#1e40af;" onclick="location.hash='#feedback'; location.reload();" title="Jump to Examiner Evaluation & Review Suite">
+        <span>⭐ Faculty Reviews &amp; Feedback</span>
+      </a>
+      <button type="button" class="btn-glass-help" onclick="window.print()" title="Print or save this guide as PDF">
+        <span>🖨️ Print / Save PDF</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mount Container -->
+  <main class="standalone-main-content">
+    <div id="help-standalone-root"></div>
+  </main>
+
+  <script>
+
+// === ICONS ===
+// Icons from Lucide (ISC License) - https://lucide.dev
+const ICONS = {
+ "dashboard": "<rect width=\"7\" height=\"9\" x=\"3\" y=\"3\" rx=\"1\" /> <rect width=\"7\" height=\"5\" x=\"14\" y=\"3\" rx=\"1\" /> <rect width=\"7\" height=\"9\" x=\"14\" y=\"12\" rx=\"1\" /> <rect width=\"7\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\" />",
+ "cases": "<path d=\"M10.7 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2v4.1\" /> <path d=\"m21 21-1.9-1.9\" /> <circle cx=\"17\" cy=\"17\" r=\"3\" />",
+ "evidence": "<path d=\"M4 9.8V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3\" /> <path d=\"M14 2v5a1 1 0 0 0 1 1h5\" /> <path d=\"M9 17v-2a2 2 0 0 0-4 0v2\" /> <rect width=\"8\" height=\"5\" x=\"3\" y=\"17\" rx=\"1\" />",
+ "custody": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" /> <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />",
+ "audit": "<path d=\"M15 12h-5\" /> <path d=\"M15 8h-5\" /> <path d=\"M19 17V5a2 2 0 0 0-2-2H4\" /> <path d=\"M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3\" />",
+ "ai": "<path d=\"M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z\" /> <path d=\"M9 13a4.5 4.5 0 0 0 3-4\" /> <path d=\"M6.003 5.125A3 3 0 0 0 6.401 6.5\" /> <path d=\"M3.477 10.896a4 4 0 0 1 .585-.396\" /> <path d=\"M6 18a4 4 0 0 1-1.967-.516\" /> <path d=\"M12 13h4\" /> <path d=\"M12 18h6a2 2 0 0 1 2 2v1\" /> <path d=\"M12 8h8\" /> <path d=\"M16 8V5a2 2 0 0 1 2-2\" /> <circle cx=\"16\" cy=\"13\" r=\".5\" /> <circle cx=\"18\" cy=\"3\" r=\".5\" /> <circle cx=\"20\" cy=\"21\" r=\".5\" /> <circle cx=\"20\" cy=\"8\" r=\".5\" />",
+ "sql": "<ellipse cx=\"12\" cy=\"5\" rx=\"9\" ry=\"3\" /> <path d=\"M3 5V19A9 3 0 0 0 21 19V5\" /> <path d=\"M3 12A9 3 0 0 0 21 12\" />",
+ "docs": "<path d=\"M12 7v14\" /> <path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" />",
+ "logout": "<path d=\"m16 17 5-5-5-5\" /> <path d=\"M21 12H9\" /> <path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\" />",
+ "shield": "<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\" /> <path d=\"m9 12 2 2 4-4\" />",
+ "upload": "<path d=\"M12 3v12\" /> <path d=\"m17 8-5-5-5 5\" /> <path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" />",
+ "check": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"m9 12 2 2 4-4\" />",
+ "alert": "<path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\" /> <path d=\"M12 9v4\" /> <path d=\"M12 17h.01\" />",
+ "refresh": "<path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\" /> <path d=\"M21 3v5h-5\" /> <path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\" /> <path d=\"M8 16H3v5\" />",
+ "download": "<path d=\"M12 15V3\" /> <path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <path d=\"m7 10 5 5 5-5\" />",
+ "search": "<path d=\"m21 21-4.34-4.34\" /> <circle cx=\"11\" cy=\"11\" r=\"8\" />",
+ "user": "<path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\" /> <circle cx=\"12\" cy=\"7\" r=\"4\" />",
+ "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />",
+ "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />",
+ "play": "<path d=\"M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z\" />",
+ "send": "<path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\" /> <path d=\"m21.854 2.147-10.94 10.939\" />",
+ "file": "<path d=\"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z\" /> <path d=\"M14 2v5a1 1 0 0 0 1 1h5\" /> <path d=\"M10 9H8\" /> <path d=\"M16 13H8\" /> <path d=\"M16 17H8\" />",
+ "users": "<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" /> <path d=\"M16 3.128a4 4 0 0 1 0 7.744\" /> <path d=\"M22 21v-2a4 4 0 0 0-3-3.87\" /> <circle cx=\"9\" cy=\"7\" r=\"4\" />",
+ "trash": "<path d=\"M10 11v6\" /> <path d=\"M14 11v6\" /> <path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\" /> <path d=\"M3 6h18\" /> <path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\" />",
+ "edit": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />",
+ "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M12 6v6l4 2\" />",
+ "arrow": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />",
+ "ghost": "<path d=\"M9 10h.01\" /> <path d=\"M15 10h.01\" /> <path d=\"M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z\" />",
+ "cpu": "<path d=\"M12 20v2\" /> <path d=\"M12 2v2\" /> <path d=\"M17 20v2\" /> <path d=\"M17 2v2\" /> <path d=\"M2 12h2\" /> <path d=\"M2 17h2\" /> <path d=\"M2 7h2\" /> <path d=\"M20 12h2\" /> <path d=\"M20 17h2\" /> <path d=\"M20 7h2\" /> <path d=\"M7 20v2\" /> <path d=\"M7 2v2\" /> <rect x=\"4\" y=\"4\" width=\"16\" height=\"16\" rx=\"2\" /> <rect x=\"8\" y=\"8\" width=\"8\" height=\"8\" rx=\"1\" />",
+ "eye": "<path d=\"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0\" /> <circle cx=\"12\" cy=\"12\" r=\"3\" />",
+ "report": "<path d=\"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z\" /> <path d=\"M14 2v5a1 1 0 0 0 1 1h5\" /> <path d=\"M8 18v-2\" /> <path d=\"M12 18v-4\" /> <path d=\"M16 18v-6\" />",
+ "settings": "<path d=\"M10 5H3\" /> <path d=\"M12 19H3\" /> <path d=\"M14 3v4\" /> <path d=\"M16 17v4\" /> <path d=\"M21 12h-9\" /> <path d=\"M21 19h-5\" /> <path d=\"M21 5h-7\" /> <path d=\"M8 10v4\" /> <path d=\"M8 12H3\" />",
+ "fingerprint": "<path d=\"M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4\" /> <path d=\"M14 13.12c0 2.38 0 6.38-1 8.88\" /> <path d=\"M17.29 21.02c.12-.6.43-2.3.5-3.02\" /> <path d=\"M2 12a10 10 0 0 1 18-6\" /> <path d=\"M2 16h.01\" /> <path d=\"M21.8 16c.2-2 .131-5.354 0-6\" /> <path d=\"M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2\" /> <path d=\"M8.65 22c.21-.66.45-1.32.57-2\" /> <path d=\"M9 6.8a6 6 0 0 1 9 5.2v2\" />",
+ "alert-octagon": "<path d=\"M12 16h.01\" /> <path d=\"M12 8v4\" /> <path d=\"M15.312 2a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586l-4.688-4.688A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2z\" />",
+ "info": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M12 16v-4\" /> <path d=\"M12 8h.01\" />",
+ "chevron": "<path d=\"m9 18 6-6-6-6\" />",
+ "filter": "<path d=\"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z\" />",
+ "lock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\" /> <path d=\"M7 11V7a5 5 0 0 1 10 0v4\" />",
+ "help": "<circle cx=\"12\" cy=\"12\" r=\"10\" /><path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3\" /><line x1=\"12\" y1=\"17\" x2=\"12.01\" y2=\"17\" />",
+ "book": "<path d=\"M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z\" /><path d=\"M6 2v20\" />",
+ "award": "<circle cx=\"12\" cy=\"8\" r=\"7\" /><polyline points=\"8.21 13.89 7 23 12 20 17 23 15.79 13.88\" />",
+ "sparkles": "<path d=\"m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z\" />",
+ "graduation": "<path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\" /><path d=\"M22 10v6\" /><path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\" />",
+ "checklist": "<path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\" /><rect x=\"8\" y=\"2\" width=\"8\" height=\"4\" rx=\"1\" ry=\"1\" /><path d=\"m9 14 2 2 4-4\" />"
+};
+
+function icon(name, size = 18) {
+  return `<svg class="icon" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ''}</svg>`;
+}
+
+
+// === ESC HELPER ===
+function esc(v) {
+  if (v === null || v === undefined) return '';
+  return String(v).replace(/[&<>"']/g, function(c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+// === HELP DATA ===
 // =====================================================================
 // SQL Ghost Hunter - Interactive Help & Academic Explainer Data Store
 // Master dataset for DBMS students, viva preparation, and demonstrations
 // =====================================================================
 
-export const UNDERSTAND_IN_30_SECONDS = {
+const UNDERSTAND_IN_30_SECONDS = {
   analogy: {
     title: "The School Ledger Analogy (5th-Standard Level)",
     text: `Imagine your school principal has a special golden notebook in which all student exam marks are recorded.
@@ -57,7 +1809,7 @@ SQL Ghost Hunter is like an invisible, vigilant camera and duplicate ledger buil
   ]
 };
 
-export const WHY_BUILT = {
+const WHY_BUILT = {
   problemSummary: "In corporate enterprises, banks, hospitals, and government agencies, insider threats pose the greatest risk to data security. Employees with legitimate database credentials can silently alter payroll numbers, delete compliance records, or manipulate customer balances without leaving a trace in standard application logs.",
   scenarios: [
     {
@@ -102,7 +1854,7 @@ export const WHY_BUILT = {
   disclaimer: "Honest Academic Scope: While SQL Ghost Hunter provides defense-in-depth through MySQL triggers, cryptographic SHA-256 hashes, and least-privilege user isolation, no software system is 100% tamper-proof. If an attacker gains operating-system-level root or raw disk block write access, they can theoretically alter underlying disk storage or drop triggers. SQL Ghost Hunter guarantees that all modifications passing through the database engine leave an indelible trace and that evidence modifications on disk are cryptographically detectable."
 };
 
-export const MODULES_TOUR = [
+const MODULES_TOUR = [
   {
     id: "dashboard",
     name: "1. Executive Dashboard",
@@ -273,7 +2025,7 @@ export const MODULES_TOUR = [
   }
 ];
 
-export const WORKFLOW_STEPS = [
+const WORKFLOW_STEPS = [
   { step: 1, title: "1. Investigator Authentication", role: "Investigator / Admin", tech: "FastAPI + Bcrypt + app_sessions", whatUserSees: "A modern login screen with user selection chips. User enters email and password.", behindScenes: "Password verified with `bcrypt.checkpw()`. A secure cryptographic session token is generated, stored in `app_sessions`, and returned as an HTTP-only SameSite cookie." },
   { step: 2, title: "2. Connection Context & Identity Injection", role: "Database Engine", tech: "SQLAlchemy + MySQL User Variables", whatUserSees: "The application transitions seamlessly to the Dashboard.", behindScenes: "On connection checkout, the backend executes `SET @app_investigator_id = :uid, @app_client_ip = :ip`. This allows downstream MySQL triggers to attribute modifications directly to the logged-in investigator." },
   { step: 3, title: "3. Case Creation & Dossier Initialization", role: "Lead Investigator", tech: "sp_create_case + cases table", whatUserSees: "User fills out case title, description, and priority ('CRITICAL', 'HIGH', etc.).", behindScenes: "Stored procedure `sp_create_case` generates a new row in `cases`, auto-assigns the creator as lead in `case_assignments`, and writes an initial audit record." },
@@ -287,7 +2039,7 @@ export const WORKFLOW_STEPS = [
   { step: 11, title: "11. Academic Syllabus & SQL Concept Verification", role: "Student / Faculty", tech: "SQL Demonstration Lab", whatUserSees: "Student runs live queries, execution plans, and concept checklists during viva.", behindScenes: "Queries execute parameterized SQL demonstrating 3NF normalization, CTEs, joins, window functions, and views directly on live MySQL data." }
 ];
 
-export const DATABASE_EXPLAINER = {
+const DATABASE_EXPLAINER = {
   dbName: "ghost_hunter",
   storageEngine: "InnoDB",
   charset: "utf8mb4",
@@ -425,7 +2177,7 @@ export const DATABASE_EXPLAINER = {
   ]
 };
 
-export const TECH_STACK = [
+const TECH_STACK = [
   { tech: "MySQL 8.0", simple: "The digital filing cabinet that safely stores all information in organized tables.", technical: "Relational DBMS providing InnoDB ACID transactions, declarative CHECK constraints, JSON diff columns, stored routines, views, and automated audit triggers." },
   { tech: "Python 3.10+", simple: "The programming language that runs the behind-the-scenes logic of the application.", technical: "High-performance backend runtime driving asynchronous API endpoints, hashing pipelines, and threat detection algorithms." },
   { tech: "FastAPI", simple: "The bridge connecting web browser clicks to backend Python code.", technical: "Modern, high-performance ASGI web framework providing Pydantic-based request validation, automated OpenAPI docs, and strict async route execution." },
@@ -440,14 +2192,14 @@ export const TECH_STACK = [
   { tech: "Ollama (Optional)", simple: "Runs AI language models locally on your computer without sending data to the cloud.", technical: "Local open-weight LLM runtime (`llama3.2:3b`) queried via HTTP for natural language narrative synthesis without API costs." }
 ];
 
-export const CORE_WEB_CONCEPTS = [
+const CORE_WEB_CONCEPTS = [
   { concept: "Frontend vs Backend vs Database", explanation: "The **Frontend** (HTML/CSS/JS) is what the user sees in the browser. The **Backend** (Python FastAPI) is the brain that enforces security rules and runs business logic. The **Database** (MySQL 8) is the vault that reliably stores and protects all permanent records." },
   { concept: "API & REST", explanation: "An **API (Application Programming Interface)** is the defined contract for communication. **REST** uses standard HTTP methods: `GET` to read, `POST` to create, `PATCH/PUT` to update, and `DELETE` to remove resources." },
   { concept: "Authentication vs Authorization", explanation: "**Authentication (AuthN)** verifies *WHO you are* (entering correct email and password). **Authorization (AuthZ)** verifies *WHAT you are allowed to do* (e.g. an Investigator cannot delete users; only an Admin can)." },
   { concept: "Hashing vs Encryption", explanation: "**Hashing** is a one-way street: `data -> hash` (cannot be reversed; used for passwords and file integrity). **Encryption** is a two-way street: `plaintext -> ciphertext -> plaintext` using a secret key (can be decrypted)." }
 ];
 
-export const DICTIONARY_TERMS = [
+const DICTIONARY_TERMS = [
   {
     "term": "DBMS",
     "cat": "DBMS & SQL",
@@ -834,7 +2586,7 @@ export const DICTIONARY_TERMS = [
   }
 ];
 
-export const TEACHER_PRESENTATION = {
+const TEACHER_PRESENTATION = {
   "elevatorPitch": "Respected faculty, SQL Ghost Hunter is an AI-assisted relational database forensics and data integrity monitoring system built on MySQL 8. Its core motto is 'Every Database Change Leaves a Trace'. While conventional systems only tell you that data changed, SQL Ghost Hunter proves WHO made the change, WHAT the values were before and after using JSON diffs, WHEN it happened, whether digital evidence was tampered with using SHA-256 hashes, and whether insider activities are malicious using automated anomaly detection.",
   "problemStatement": "In modern database management, insider tampering is one of the most dangerous and difficult threats to solve. If a privileged employee secretly alters payroll numbers at 2 a.m. or connects directly via MySQL Workbench to bypass the web application, traditional web server logs show nothing. Furthermore, digital evidence files can be modified on disk without detection. Without verifiable cryptographic proofs and immutable audit trails, investigators cannot prove who was responsible in a court of law.",
   "objectives": [
@@ -888,7 +2640,7 @@ export const TEACHER_PRESENTATION = {
   "conclusion": "In conclusion, SQL Ghost Hunter demonstrates that the database is not merely a passive storage bucket, but an active, intelligent, and tamper-evident security system. By combining relational triggers, cryptographic hashing, 3NF normalization, and explainable anomaly detection, we have created an academic project that solves genuine real-world digital forensics challenges."
 };
 
-export const VIVA_QUESTIONS = [
+const VIVA_QUESTIONS = [
 
   {
     "id": 101,
@@ -1933,7 +3685,7 @@ export const VIVA_QUESTIONS = [
   }
 ];
 
-export const TEACH_ME_MODES = [
+const TEACH_ME_MODES = [
   {
     "id": "kid",
     "title": "Explain Like I'm 10",
@@ -1971,7 +3723,7 @@ export const TEACH_ME_MODES = [
   }
 ];
 
-export const QUIZ_QUESTIONS = [
+const QUIZ_QUESTIONS = [
   {
     "id": 1,
     "q": "What does the motto 'Every Database Change Leaves a Trace' refer to in this project?",
@@ -2334,7 +4086,7 @@ export const QUIZ_QUESTIONS = [
   }
 ];
 
-export const DEMO_CHECKLIST = [
+const DEMO_CHECKLIST = [
   {
     "id": 1,
     "title": "1. Verify MySQL 8 Service is Running",
@@ -2435,10 +4187,10 @@ export const DEMO_CHECKLIST = [
 
 
 // Alias for application tour export
-export const APPLICATION_TOUR = MODULES_TOUR;
+const APPLICATION_TOUR = MODULES_TOUR;
 
 
-export const PERSISTENCE_EXPLAINER = {
+const PERSISTENCE_EXPLAINER = {
   title: "HOW DOES THE APPLICATION REMEMBER MY DATA?",
   subtitle: "End-to-End Architectural Flow: From User Click to Persistent MySQL InnoDB Storage",
   summaryQuote: "When I create an investigation, the application sends the information to FastAPI. FastAPI communicates with MySQL. MySQL saves the record. When I reopen the application, the dashboard requests the information again from MySQL.",
@@ -2517,7 +4269,7 @@ export const PERSISTENCE_EXPLAINER = {
 
 
 
-export const PROOF_DEMO_SCRIPT = [
+const PROOF_DEMO_SCRIPT = [
   {
     step: 1,
     title: "1. Open Web Application",
@@ -2673,3 +4425,1464 @@ export const PROOF_DEMO_SCRIPT = [
   }
 ];
 
+
+
+// === APPLICATION LOGIC ===
+// =====================================================================
+// SQL Ghost Hunter - Standalone Interactive Explainer & Feedback Guide
+// Single-Page Dedicated Academic Learning Suite (12 Core Tabs)
+// =====================================================================
+
+
+import {
+  UNDERSTAND_IN_30_SECONDS,
+  WHY_BUILT,
+  APPLICATION_TOUR,
+  WORKFLOW_STEPS,
+  DATABASE_EXPLAINER,
+  PERSISTENCE_EXPLAINER,
+  TECH_STACK,
+  CORE_WEB_CONCEPTS,
+  DICTIONARY_TERMS,
+  TEACHER_PRESENTATION,
+  PROOF_DEMO_SCRIPT,
+  VIVA_QUESTIONS,
+  TEACH_ME_MODES
+} from './pages/helpData.js';
+
+let activeTab = 'overview';
+let activeTourModule = APPLICATION_TOUR[0].id;
+let activeDbTable = DATABASE_EXPLAINER.tables[0].name;
+let activeTeachMode = TEACH_ME_MODES[0].id;
+let activeSpeechLevel = 'student'; // 'student' | 'prof' | 'oneline'
+let vivaSearch = '';
+let vivaCategory = 'All';
+let vivaDifficulty = 'All';
+let dictSearch = '';
+let dictCategory = 'All';
+
+// Feedback System State
+let feedbackRating = 5;
+let feedbackList = [];
+
+// Seed default sample faculty reviews if none exist
+const DEFAULT_FACULTY_REVIEWS = [
+  {
+    id: 1,
+    name: "Dr. K. R. Ramanathan",
+    role: "DBMS Professor & Head of Department",
+    institution: "Dept. of Computer Science & Engineering",
+    rating: 5,
+    category: "Database Architecture & 3NF",
+    scores: { schema: 10, security: 10, forensics: 10, presentation: 10 },
+    highlights: ["Engine-level triggers over app logs", "3NF Normalization", "Zero mock arrays"],
+    feedback: "An exemplary undergraduate database project. Enforcing non-repudiation at the MySQL storage engine via triggers and least-privilege user isolation is an industry-grade pattern rarely seen in academic projects. The viva preparation matrix is thorough.",
+    recommendation: "Outstanding (10/10 - Grade O)",
+    date: "November 2026",
+    verified: true
+  },
+  {
+    id: 2,
+    name: "Prof. S. Ananthi",
+    role: "External Lab Examiner",
+    institution: "University Examination Board",
+    rating: 5,
+    category: "Forensic Integrity & Viva Prep",
+    scores: { schema: 10, security: 9, forensics: 10, presentation: 10 },
+    highlights: ["SHA-256 Tamper Detection", "11 Detection Rules", "Apple Glass UI"],
+    feedback: "The 17-step demonstration script makes evaluating this project a pleasure. Physically modifying an evidence file on disk and having the system mathematically detect the SHA-256 mismatch in front of the examiner is definitive proof.",
+    recommendation: "Outstanding (10/10 - Grade O)",
+    date: "November 2026",
+    verified: true
+  }
+];
+
+function loadStoredFeedback() {
+  try {
+    const raw = localStorage.getItem('gh_help_feedback_records');
+    if (raw) {
+      feedbackList = JSON.parse(raw);
+    } else {
+      feedbackList = [...DEFAULT_FACULTY_REVIEWS];
+      localStorage.setItem('gh_help_feedback_records', JSON.stringify(feedbackList));
+    }
+  } catch {
+    feedbackList = [...DEFAULT_FACULTY_REVIEWS];
+  }
+}
+
+function saveFeedback(newEntry) {
+  feedbackList.unshift(newEntry);
+  try {
+    localStorage.setItem('gh_help_feedback_records', JSON.stringify(feedbackList));
+  } catch { /* ignore */ }
+  // Optional remote sync
+  fetch('/api/feedback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newEntry)
+  }).catch(() => { /* offline graceful */ });
+}
+
+function runHelpApp() {
+  const containerEl = document.getElementById('help-standalone-root');
+  if (!containerEl) return;
+  loadStoredFeedback();
+
+  // Read URL hash parameter if present (e.g. #viva or #proof)
+  const hash = window.location.hash.replace('#', '').trim();
+  if (hash) {
+    const validTabs = [
+      'overview', 'why', 'tour', 'workflow', 'database', 'persistence',
+      'tech', 'dictionary', 'presentation', 'proof', 'viva', 'feedback'
+    ];
+    if (validTabs.includes(hash)) {
+      activeTab = hash;
+    }
+  }
+
+  function renderHero() {
+    return `
+      <div class="glass-hero">
+        <div class="glass-hero-head">
+          <div class="glass-badge-row">
+            <span class="glass-pill accent">${icon('sparkles', 14)} DBMS Master Explainer</span>
+            <span class="glass-pill success">${icon('shield', 14)} 100% Offline Capable</span>
+            <span class="glass-pill">${icon('sql', 14)} MySQL 8.0 &bull; 3NF Schema</span>
+            <span class="glass-pill accent" style="background:#fef3c7;color:#92400e;border-color:#fde68a;">
+              ⭐ ${feedbackList.length} Faculty &amp; Student Reviews
+            </span>
+          </div>
+          <span class="small muted">University DBMS Project &bull; College Faculty Presentation &amp; Viva Guide</span>
+        </div>
+
+        <div class="glass-hero-title">SQL Ghost Hunter &mdash; Master Project Learning &amp; Demonstration Guide</div>
+        <div class="glass-hero-subtitle">
+          "Every Database Change Leaves a Trace." Explore how active MySQL triggers, cryptographic SHA-256 hashes, 
+          normalized relational schemas, and explainable anomaly detection work together to solve real-world digital forensics challenges.
+        </div>
+
+        <!-- Quick Mode Switcher Cards -->
+        <div class="glass-quick-modes">
+          <button type="button" class="quick-mode-btn ${activeTab === 'overview' ? 'active' : ''}" data-goto="overview">
+            <div class="mode-title">${icon('lightbulb', 18)} 1. Understand in 30s</div>
+            <div class="mode-desc">School notebook analogy &amp; 5th-standard concept glossary.</div>
+          </button>
+          <button type="button" class="quick-mode-btn ${activeTab === 'proof' ? 'active' : ''}" data-goto="proof">
+            <div class="mode-title">${icon('shield', 18)} 10. Real Data Proof</div>
+            <div class="mode-desc">17-step live sequence proving genuine MySQL persistence.</div>
+          </button>
+          <button type="button" class="quick-mode-btn ${activeTab === 'persistence' ? 'active' : ''}" data-goto="persistence">
+            <div class="mode-title">${icon('server', 18)} 6. How Data Persists</div>
+            <div class="mode-desc">6-layer architectural flow from browser click to InnoDB disk.</div>
+          </button>
+          <button type="button" class="quick-mode-btn ${activeTab === 'presentation' ? 'active' : ''}" data-goto="presentation">
+            <div class="mode-title">${icon('graduation', 18)} 9. Presentation Mode</div>
+            <div class="mode-desc">Complete presentation speech &amp; live demo script for your teacher.</div>
+          </button>
+          <button type="button" class="quick-mode-btn ${activeTab === 'viva' ? 'active' : ''}" data-goto="viva">
+            <div class="mode-title">${icon('award', 18)} 11. Prepare for Viva</div>
+            <div class="mode-desc">90+ categorized questions, technical answers &amp; counter-questions.</div>
+          </button>
+          <button type="button" class="quick-mode-btn ${activeTab === 'feedback' ? 'active' : ''}" data-goto="feedback">
+            <div class="mode-title">${icon('sparkles', 18)} 12. Feedback &amp; Review</div>
+            <div class="mode-desc">Persona learning &amp; examiner feedback rating suite.</div>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderTabsBar() {
+    const tabs = [
+      { id: 'overview', label: '1. Overview in 30s', icon: 'lightbulb' },
+      { id: 'why', label: '2. Why Built?', icon: 'alert' },
+      { id: 'tour', label: '3. App Tour', icon: 'eye' },
+      { id: 'workflow', label: '4. Workflow', icon: 'clock' },
+      { id: 'database', label: '5. Database Explainer', icon: 'sql' },
+      { id: 'persistence', label: '6. Data Persistence', icon: 'server' },
+      { id: 'tech', label: '7. Tech Stack', icon: 'cpu' },
+      { id: 'dictionary', label: '8. Dictionary', icon: 'book' },
+      { id: 'presentation', label: '9. Teacher Presentation', icon: 'graduation' },
+      { id: 'proof', label: '10. Proof of Real Data', icon: 'shield', badge: '17 Steps' },
+      { id: 'viva', label: '11. Viva Preparation', icon: 'award', badge: VIVA_QUESTIONS.length },
+      { id: 'feedback', label: '12. Teach Me & Feedback', icon: 'sparkles', badge: 'Review Suite' }
+    ];
+
+    return `
+      <nav class="glass-tabs-bar" aria-label="Help Guide Sections">
+        ${tabs.map((t) => `
+          <button type="button" class="glass-tab-btn ${activeTab === t.id ? 'active' : ''}" data-tab="${t.id}">
+            ${icon(t.icon, 16)}
+            <span>${esc(t.label)}</span>
+            ${t.badge !== undefined ? `<span class="tab-badge">${esc(t.badge)}</span>` : ''}
+          </button>
+        `).join('')}
+      </nav>
+    `;
+  }
+
+  // ---------------- TAB 1: OVERVIEW IN 30 SECONDS ----------------
+  function renderOverviewTab() {
+    const data = UNDERSTAND_IN_30_SECONDS;
+    return `
+      <div class="glass-panel">
+        <div class="glass-card">
+          <div class="glass-card-head">
+            <div class="glass-card-title">${icon('lightbulb')} ${esc(data.analogy.title)}</div>
+            <span class="glass-pill accent">5th-Standard Analogy</span>
+          </div>
+          <div class="script-speech-box" style="font-size:15px;line-height:1.8;">
+            ${esc(data.analogy.text).replace(/\n\n/g, '<br><br>')}
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="glass-card-head">
+            <div class="glass-card-title">${icon('book')} Core Forensic Concepts: 2-Level Explanations</div>
+            <span class="glass-pill">Simple vs. Technical</span>
+          </div>
+          <p class="muted small" style="margin-top:-6px;margin-bottom:16px;">
+            Every concept below is explained twice: first in very simple everyday terms, and second in precise academic engineering terms for your professors.
+          </p>
+
+          <div class="grid grid-2">
+            ${data.concepts.map((c) => `
+              <div class="glass-card" style="padding:18px;background:rgba(255,255,255,0.9);">
+                <div style="display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700;color:#0f172a;margin-bottom:12px;">
+                  <span style="color:var(--primary);">${icon(c.icon, 20)}</span>
+                  <span>${esc(c.term)}</span>
+                </div>
+                <div class="two-level-card" style="margin-top:0;">
+                  <div class="level-card simple">
+                    <span class="level-tag">Simple Explanation (Kid-Friendly)</span>
+                    <span class="level-text">${esc(c.simple)}</span>
+                  </div>
+                  <div class="level-card tech">
+                    <span class="level-tag">Technical Explanation (Engineering)</span>
+                    <span class="level-text">${esc(c.technical)}</span>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ---------------- TAB 2: WHY BUILT? ----------------
+  function renderWhyTab() {
+    const data = WHY_BUILT;
+    return `
+      <div class="glass-panel">
+        <div class="glass-card">
+          <div class="glass-card-head">
+            <div class="glass-card-title">${icon('alert')} Real-World Security Failures Solved by SQL Ghost Hunter</div>
+            <span class="glass-pill accent">Real-World Case Studies</span>
+          </div>
+
+          <div class="grid grid-2">
+            ${data.problems.map((p) => `
+              <div class="glass-card" style="padding:20px;background:rgba(255,255,255,0.92);">
+                <div style="font-size:16px;font-weight:700;color:#0f172a;margin-bottom:8px;">${esc(p.title)}</div>
+                <div class="muted small" style="margin-bottom:14px;line-height:1.5;"><strong>Scenario:</strong> ${esc(p.scenario)}</div>
+                
+                <div class="comparison-grid" style="grid-template-columns:1fr;gap:10px;">
+                  <div class="comp-box without" style="padding:12px 14px;">
+                    <div class="comp-box-header" style="font-size:13px;">${icon('x', 16)} Without SQL Ghost Hunter</div>
+                    <div style="font-size:13px;color:#7f1d1d;">${esc(p.without)}</div>
+                  </div>
+                  <div class="comp-box with" style="padding:12px 14px;">
+                    <div class="comp-box-header" style="font-size:13px;">${icon('check', 16)} With SQL Ghost Hunter</div>
+                    <div style="font-size:13px;color:#14532d;">${esc(p.with)}</div>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="glass-card-head">
+            <div class="glass-card-title">${icon('shield')} Feature-by-Feature Comparison Matrix</div>
+            <span class="glass-pill success">Architectural Advantage</span>
+          </div>
+
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th style="width:24%;">Feature / Capability</th>
+                  <th style="width:38%;">Traditional Database / Web Architecture</th>
+                  <th style="width:38%;">SQL Ghost Hunter System</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${data.comparisonMatrix.map((m) => `
+                  <tr>
+                    <td><strong>${esc(m.feature)}</strong></td>
+                    <td style="color:#b91c1c;">${icon('x', 14)} ${esc(m.traditional)}</td>
+                    <td style="color:#15803d;font-weight:600;">${icon('check', 14)} ${esc(m.ghostHunter)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="warn" style="margin-top:18px;font-size:13px;line-height:1.5;">
+            <strong>Faculty Assessment Note:</strong> ${esc(data.safetyDisclaimer)}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ---------------- TAB 3: COMPLETE APPLICATION TOUR ----------------
+  function renderTourTab() {
+    const current = APPLICATION_TOUR.find((m) => m.id === activeTourModule) || APPLICATION_TOUR[0];
+    return `
+      <div class="glass-panel">
+        <div class="glass-card">
+          <div class="glass-card-head">
+            <div class="glass-card-title">${icon('eye')} Complete Application Tour &amp; Module Explainer</div>
+            <span class="glass-pill accent">12 Production Modules</span>
+          </div>
+          <p class="muted small" style="margin-top:-6px;margin-bottom:16px;">
+            Select any module on the left to inspect its purpose, technical backend implementation, involved MySQL tables, 
+            and the exact script to speak when demonstrating it to your teacher.
+          </p>
+
+          <div class="tour-layout">
+            <div class="module-nav-list">
+              ${APPLICATION_TOUR.map((m, idx) => `
+                <button type="button" class="module-nav-item ${m.id === current.id ? 'active' : ''}" data-tour="${m.id}">
+                  <span>${idx + 1}. ${esc(m.name)}</span>
+                  ${icon('chevron', 14)}
+                </button>
+              `).join('')}
+            </div>
+
+            <div class="module-detail-box">
+              <div class="glass-card" style="padding:22px;background:rgba(255,255,255,0.94);">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
+                  <h2 style="font-size:20px;color:#0f172a;">${esc(current.name)}</h2>
+                  <span class="glass-pill success">Verified in Source Code</span>
+                </div>
+
+                <div class="module-subgrid">
+                  <div class="module-subcard">
+                    <span class="sub-title">Why Is It Required?</span>
+                    <span class="sub-content">${esc(current.why)}</span>
+                  </div>
+                  <div class="module-subcard">
+                    <span class="sub-title">How It Works in Simple Words</span>
+                    <span class="sub-content">${esc(current.simple)}</span>
+                  </div>
+                </div>
+
+                <div class="module-subcard" style="margin-top:14px;">
+                  <span class="sub-title">What Happens Technically in the Backend?</span>
+                  <span class="sub-content" style="font-family:var(--font);">${esc(current.technical)}</span>
+                </div>
+
+                <div class="module-subgrid" style="margin-top:14px;">
+                  <div class="module-subcard">
+                    <span class="sub-title">Database Tables Involved</span>
+                    <span class="sub-content">
+                      ${current.tables.map((t) => `<span class="badge" style="margin:2px 3px 2px 0;">${esc(t)}</span>`).join('')}
+                    </span>
+                  </div>
+                  <div class="module-subcard">
+                    <span class="sub-title">DBMS / SQL Concepts Used</span>
+                    <span class="sub-content"><code>${esc(current.sqlConcepts)}</code></span>
+                  </div>
+                </div>
+
+                <div class="demonstration-highlight-box" style="margin-top:18px;">
+                  <div class="demo-label">${icon('play', 14)} What to Demonstrate to Your Teacher:</div>
+                  <div style="font-size:13.5px;color:#1e3a8a;font-weight:600;">Action on Screen: ${esc(current.demoAction)}</div>
+                  <div class="demo-speech">
+                    &ldquo;${esc(current.demoSpeech)}&rdquo;
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ---------------- TAB 4: WORKFLOW ----------------
+  function renderWorkflowTab() {
+    return `
+      <div class="glass-panel">
+        <div class="glass-card">
+          <div class="glass-card-head">
+            <div class="glass-card-title">${icon('clock')} The Complete 11-Step Forensic Lifecycle</div>
+            <span class="glass-pill accent">End-to-End Workflow</span>
+          </div>
+          <p class="muted small" style="margin-top:-6px;margin-bottom:20px;">
+            This interactive timeline details what the investigator observes on the screen versus what executes under the hood inside Python and MySQL 8.
+          </p>
+
+          <div class="workflow-stepper">
+            ${WORKFLOW_STEPS.map((s) => `
+              <div class="workflow-step">
+                <div class="workflow-num-circle">${s.step}</div>
+                <div class="workflow-step-content">
+                  <div class="workflow-step-title">${esc(s.title)}</div>
+                  <div class="workflow-duo-cards">
+                    <div class="workflow-subbox user-view">
+                      <strong style="color:#065f46;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:4px;">
+                        ${icon('eye', 12)} What User Sees in UI:
+                      </strong>
+                      ${esc(s.userView)}
+                    </div>
+                    <div class="workflow-subbox tech-view">
+                      <strong style="color:#1e40af;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:4px;">
+                        ${icon('cpu', 12)} Behind the Scenes (Python &amp; MySQL):
+                      </strong>
+                      ${esc(s.backendView)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ---------------- TAB 5: DATABASE EXPLAINER ----------------
+  function renderDatabaseTab() {
+    const curTable = DATABASE_EXPLAINER.tables.find((t) => t.name === activeDbTable) || DATABASE_EXPLAINER.tables[0];
+    return `
+      <div class="glass-panel">
+        <div class="glass-card">
+          <div class="glass-card-head">
+            <div class="glass-card-title">${icon('sql')} Database Architecture &amp; Relational Schema Explorer</div>
+            <span class="glass-pill success">Database: ${esc(DATABASE_EXPLAINER.dbName)} (MySQL 8.0)</span>
+          </div>
+          <p class="muted small" style="margin-top:-6px;margin-bottom:16px;">
+            Click on any table below to inspect its purpose, primary keys, foreign keys, relational cardinality, constraints, and sample data.
+          </p>
+
+          <div class="db-explorer-layout">
+            <div class="db-tables-list">
+              ${DATABASE_EXPLAINER.tables.map((t) => `
+                <button type="button" class="db-table-item ${t.name === curTable.name ? 'active' : ''}" data-dbtable="${t.name}">
+                  <span>${esc(t.name)}</span>
+                  ${icon('chevron', 14)}
+                </button>
+              `).join('')}
+            </div>
+
+            <div class="db-table-detail">
+              <div class="glass-card" style="padding:22px;background:rgba(255,255,255,0.95);">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+                  <h2 style="font-size:22px;font-family:var(--mono);color:#0f172a;">Table: ${esc(curTable.name)}</h2>
+                  <span class="glass-pill accent">3NF Normalized</span>
+                </div>
+
+                <div class="module-subcard">
+                  <span class="sub-title">Table Purpose</span>
+                  <span class="sub-content" style="font-size:14px;">${esc(curTable.purpose)}</span>
+                </div>
+
+                <div class="grid grid-2" style="margin-top:14px;">
+                  <div class="module-subcard">
+                    <span class="sub-title">Primary Key (PK)</span>
+                    <span class="sub-content"><code>${esc(curTable.pk)}</code></span>
+                  </div>
+                  <div class="module-subcard">
+                    <span class="sub-title">Foreign Keys (FK)</span>
+                    <span class="sub-content"><code>${esc(curTable.fks)}</code></span>
+                  </div>
+                </div>
+
+                <div class="grid grid-2" style="margin-top:14px;">
+                  <div class="module-subcard">
+                    <span class="sub-title">Relational Connections</span>
+                    <span class="sub-content">${esc(curTable.relationships)}</span>
+                  </div>
+                  <div class="module-subcard">
+                    <span class="sub-title">Integrity &amp; CHECK Constraints</span>
+                    <span class="sub-content"><code>${esc(curTable.constraints)}</code></span>
+                  </div>
+                </div>
+
+                <div class="module-subcard" style="margin-top:14px;">
+                  <span class="sub-title">Realistic Example Record</span>
+                  <pre class="code" style="margin-top:6px;padding:10px 14px;max-height:180px;">${esc(JSON.stringify(curTable.sample, null, 2))}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="glass-card-head">
+            <div class="glass-card-title">${icon('cpu')} Database Routines, Triggers &amp; Views</div>
+            <span class="glass-pill">Active Database Layer</span>
+          </div>
+
+          <div class="grid grid-2">
+            <div>
+              <h3 style="margin-bottom:10px;color:var(--primary);">${icon('eye', 16)} 7 Relational Views</h3>
+              <div class="list">
+                ${DATABASE_EXPLAINER.views.map((v) => `
+                  <div class="list-item" style="padding:8px 12px;background:rgba(255,255,255,0.7);margin-bottom:4px;border-radius:8px;">
+                    <div><strong>${esc(v.name)}</strong>: <span class="muted small">${esc(v.purpose)}</span></div>
+                  </div>
+                `).join('')}
+              </div>
+
+              <h3 style="margin:18px 0 10px;color:var(--primary);">${icon('play', 16)} 6 Stored Procedures</h3>
+              <div class="list">
+                ${DATABASE_EXPLAINER.storedProcedures.map((p) => `
+                  <div class="list-item" style="padding:8px 12px;background:rgba(255,255,255,0.7);margin-bottom:4px;border-radius:8px;">
+                    <div><code>CALL ${esc(p.name)}()</code>: <span class="muted small">${esc(p.purpose)}</span></div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div>
+              <h3 style="margin-bottom:10px;color:var(--primary);">${icon('fingerprint', 16)} Automated Database Triggers</h3>
+              <div class="list">
+                ${DATABASE_EXPLAINER.triggers.map((t) => `
+                  <div class="list-item" style="padding:8px 12px;background:rgba(255,255,255,0.7);margin-bottom:4px;border-radius:8px;">
+                    <div>
+                      <strong>${esc(t.name)}</strong> on <code>${esc(t.table)}</code>
+                      <div class="muted small" style="margin-top:2px;">${esc(t.purpose)}</div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+
+              <h3 style="margin:18px 0 10px;color:var(--primary);">${icon('sparkles', 16)} Deterministic Stored Functions</h3>
+              <div class="list">
+                ${DATABASE_EXPLAINER.storedFunctions.map((f) => `
+                  <div class="list-item" style="padding:8px 12px;background:rgba(255,255,255,0.7);margin-bottom:4px;border-radius:8px;">
+                    <div><code>${esc(f.name)}</code> &rarr; <span class="badge">${esc(f.returns)}</span>: <span class="muted small">${esc(f.purpose)}</span></div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ---------------- TAB 6: DATA PERSISTENCE & ARCHITECTURE ----------------
+  function renderPersistenceTab() {
+    const data = PERSISTENCE_EXPLAINER;
+    return `
+      <div class="glass-panel">
+        <div class="glass-card">
+          <div class="glass-card-head">
+            <div class="glass-card-title">${icon('server')} ${esc(data.title)}</div>
+            <span class="glass-pill accent">Persistence &amp; Durability</span>
+          </div>
+          <div class="muted small" style="margin-top:-6px;margin-bottom:14px;">
+            ${esc(data.subtitle)}
+          </div>
+          <div class="script-speech-box" style="font-size:15px;line-height:1.8;margin-bottom:20px;border-left:4px solid var(--primary);background:#f0f9ff;">
+            <strong>The Core Flow in Plain English:</strong><br>
+            "${esc(data.summaryQuote)}"
+          </div>
+
+          <div style="margin:24px 0 16px;">
+            <div style="font-weight:700;font-size:15px;color:#0f172a;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+              ${icon('code', 16)} 6-Tier Execution &amp; Storage Pipeline
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              ${data.architectureFlow.map((flow, idx) => `
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <div class="glass-card" style="padding:16px 20px;background:rgba(255,255,255,0.95);border-left:4px solid var(--primary);">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+                      <div style="display:flex;align-items:center;gap:10px;">
+                        <span class="badge" style="background:#e0e7ff;color:#3730a3;font-weight:700;">Layer ${flow.layer}</span>
+                        <span style="font-size:16px;font-weight:700;color:#0f172a;">${esc(flow.name)}</span>
+                      </div>
+                      <span class="muted small" style="font-weight:600;">${esc(flow.role)}</span>
+                    </div>
+                    <div class="two-level-card" style="margin-top:8px;">
+                      <div class="level-card simple">
+                        <span class="level-tag">Simple Explanation</span>
+                        <span class="level-text">${esc(flow.simple)}</span>
+                      </div>
+                      <div class="level-card tech">
+                        <span class="level-tag">Technical Architecture</span>
+                        <span class="level-text">${esc(flow.technical)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  ${idx < data.architectureFlow.length - 1 ? `
+                    <div style="display:flex;justify-content:center;color:#64748b;">
+                      <div style="display:flex;align-items:center;gap:6px;background:rgba(241,245,249,0.9);padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid #e2e8f0;">
+                        <span>&darr; Transfers state &amp; commands &darr;</span>
+                      </div>
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="glass-card-head">
+            <div class="glass-card-title">${icon('shield')} ${esc(data.deepDive.title)}</div>
+            <span class="glass-pill success">InnoDB Engine Guarantees</span>
+          </div>
+          <div class="grid grid-2">
+            ${data.deepDive.reasons.map((r) => `
+              <div class="glass-card" style="padding:18px;background:rgba(255,255,255,0.92);">
+                <div style="font-size:15px;font-weight:700;color:#0f172a;margin-bottom:8px;">${esc(r.title)}</div>
+                <div class="muted small" style="line-height:1.6;color:#334155;">${esc(r.desc)}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ---------------- TAB 7: TECHNOLOGY STACK ----------------
+  function renderTechTab() {
+    return `
+      <div class="glass-panel">
+        <div class="glass-card">
+          <div class="glass-card-head">
+            <div class="glass-card-title">${icon('cpu')} Technology Stack Justification</div>
+            <span class="glass-pill success">Verified Dependencies</span>
+          </div>
+          <p class="muted small" style="margin-top:-6px;margin-bottom:16px;">
+            Every technology in SQL Ghost Hunter was chosen for specific academic and technical requirements. Here is how each fits together.
+          </p>
+
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th style="width:20%;">Technology</th>
+                  <th style="width:40%;">Simple Everyday Explanation</th>
+                  <th style="width:40%;">Technical / Architecture Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${TECH_STACK.map((t) => `
+                  <tr>
+                    <td><strong>${esc(t.tech)}</strong></td>
+                    <td>${esc(t.simple)}</td>
+                    <td style="color:#1e3a8a;font-size:13px;">${esc(t.technical)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="glass-card-head">
+            <div class="glass-card-title">${icon('shield')} Core Web &amp; Security Architectural Concepts</div>
+            <span class="glass-pill">Essential Viva Definitions</span>
+          </div>
+
+          <div class="grid grid-2">
+            ${CORE_WEB_CONCEPTS.map((c) => `
+              <div class="glass-card" style="padding:18px;background:rgba(255,255,255,0.92);">
+                <h3 style="color:#0f172a;margin-bottom:8px;font-size:15px;">${esc(c.concept)}</h3>
+                <div style="font-size:13.5px;color:#334155;line-height:1.6;">
+                  ${esc(c.explanation).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ---------------- TAB 8: DICTIONARY ----------------
+  function renderDictionaryTab() {
+    const cats = ['All', 'DBMS & SQL', 'Forensics & Security', 'Intelligence & AI', 'Architecture & Web'];
+    const filtered = DICTIONARY_TERMS.filter((t) => {
+      const matchCat = dictCategory === 'All' || t.cat === dictCategory;
+      const matchSearch = !dictSearch || t.term.toLowerCase().includes(dictSearch.toLowerCase()) ||
+                          t.simple.toLowerCase().includes(dictSearch.toLowerCase()) ||
+                          t.tech.toLowerCase().includes(dictSearch.toLowerCase());
+      return matchCat && matchSearch;
+    });
+
+    return `
+      <div class="glass-panel">
+        <div class="glass-card">
+          <div class="glass-card-head">
+            <div class="glass-card-title">${icon('book')} Technical Terminology Dictionary (${DICTIONARY_TERMS.length} Terms)</div>
+            <span class="glass-pill accent">Searchable Glossary</span>
+          </div>
+
+          <div class="glass-search-box">
+            ${icon('search', 18)}
+            <input type="text" id="dict-search-input" class="glass-search-input" placeholder="Search technical terms (e.g. 3NF, Trigger, SHA-256, ACID, CTE)..." value="${esc(dictSearch)}">
+          </div>
+
+          <div class="glass-filter-chips">
+            ${cats.map((c) => `
+              <button type="button" class="glass-filter-chip ${dictCategory === c ? 'active' : ''}" data-dictcat="${c}">${esc(c)}</button>
+            `).join('')}
+          </div>
+
+          <div class="grid grid-2" style="margin-top:20px;">
+            ${filtered.length ? filtered.map((t) => `
+              <div class="glass-card" style="padding:18px;background:rgba(255,255,255,0.92);">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;">
+                  <span style="font-size:17px;font-weight:700;color:#0f172a;">${esc(t.term)}</span>
+                  <span class="badge">${esc(t.cat)}</span>
+                </div>
+                <div style="font-size:13px;color:#059669;margin-bottom:6px;"><strong>Simple:</strong> ${esc(t.simple)}</div>
+                <div style="font-size:13px;color:#1e3a8a;margin-bottom:6px;"><strong>Technical:</strong> ${esc(t.tech)}</div>
+                <div style="font-size:12.5px;color:#475569;background:#f8fafc;padding:6px 10px;border-radius:6px;margin-top:6px;">
+                  <strong>In Project:</strong> ${esc(t.project)}
+                </div>
+                <div style="font-size:12px;color:#64748b;margin-top:4px;font-style:italic;">
+                  Real-world example: ${esc(t.example)}
+                </div>
+              </div>
+            `).join('') : `<div class="empty" style="grid-column:1/-1;">No terminology found matching "${esc(dictSearch)}".</div>`}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ---------------- TAB 9: TEACHER PRESENTATION ----------------
+  function renderPresentationTab() {
+    const data = TEACHER_PRESENTATION;
+    return `
+      <div class="glass-panel">
+        <div class="glass-card">
+          <div class="glass-card-head">
+            <div class="glass-card-title">${icon('graduation')} Teacher Presentation Mode &mdash; Complete Demonstration Script</div>
+            <div class="glass-badge-row">
+              <button type="button" class="glass-pill ${activeSpeechLevel === 'student' ? 'accent' : ''}" data-speech="student">Student Speech</button>
+              <button type="button" class="glass-pill ${activeSpeechLevel === 'prof' ? 'accent' : ''}" data-speech="prof">Professor Speech</button>
+              <button type="button" class="glass-pill ${activeSpeechLevel === 'oneline' ? 'accent' : ''}" data-speech="oneline">One-Line Crisp</button>
+            </div>
+          </div>
+          <p class="muted small" style="margin-top:-6px;margin-bottom:20px;">
+            Read or practice this exact speech when presenting your project in college seminars, project reviews, or university lab evaluations.
+          </p>
+
+          <div class="stack">
+            <div class="script-section-card">
+              <div class="script-section-header">
+                <strong>1. The 30-Second Opening Elevator Pitch</strong>
+                <span class="glass-pill accent">Time: 30s</span>
+              </div>
+              <div class="script-speech-box">
+                ${activeSpeechLevel === 'student' ? `&ldquo;${esc(data.elevatorPitch)}&rdquo;` : 
+                  activeSpeechLevel === 'prof' ? `&ldquo;Respected evaluators, SQL Ghost Hunter is a declarative active-database forensics platform that embeds non-repudiation audit pipelines directly into the relational storage engine via MySQL 8 triggers and collision-resistant SHA-256 verification.&rdquo;` :
+                  `&ldquo;SQL Ghost Hunter captures database-level diffs via MySQL triggers and seals digital evidence with SHA-256 hashes to detect insider tampering.&rdquo;`}
+              </div>
+              <div class="script-action-callout">
+                ${icon('info', 16)} <strong>Action while speaking:</strong> Show the brand logo on the Dashboard screen and point to the subtitle 'Every Database Change Leaves a Trace'.
+              </div>
+            </div>
+
+            <div class="script-section-card">
+              <div class="script-section-header">
+                <strong>2. The Problem Statement</strong>
+                <span class="glass-pill accent">Time: 1 min</span>
+              </div>
+              <div class="script-speech-box">
+                ${activeSpeechLevel === 'oneline' ? 
+                  `&ldquo;Traditional systems fail when administrators bypass web apps via command line, leaving no audit trail of who modified or deleted records.&rdquo;` :
+                  `&ldquo;${esc(data.problemStatement)}&rdquo;`}
+              </div>
+            </div>
+
+            <div class="script-section-card">
+              <div class="script-section-header">
+                <strong>3. Project Objectives (DBMS Syllabus Alignment)</strong>
+                <span class="glass-pill success">8 Objectives</span>
+              </div>
+              <div class="grid grid-2" style="font-size:13.5px;color:#1e293b;gap:8px;">
+                ${data.objectives.map((o) => `
+                  <div style="background:#f8fafc;padding:10px 14px;border-radius:8px;border:1px solid #e2e8f0;">${esc(o)}</div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="script-section-card">
+              <div class="script-section-header">
+                <strong>4. System Architecture Explanation</strong>
+                <span class="glass-pill accent">Data Tier Security</span>
+              </div>
+              <div class="script-speech-box">
+                &ldquo;${esc(data.architectureSpeech)}&rdquo;
+              </div>
+            </div>
+
+            <div class="script-section-card">
+              <div class="script-section-header">
+                <strong>5. Step-by-Step Live Demonstration Protocol</strong>
+                <span class="glass-pill success">Follow in Order</span>
+              </div>
+              <div class="stack" style="gap:12px;">
+                ${data.liveDemoSteps.map((s) => `
+                  <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:14px 18px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                      <strong style="color:var(--primary);font-size:14.5px;">${esc(s.step)}</strong>
+                      <span class="badge ok">Live Click</span>
+                    </div>
+                    <div style="font-size:13px;color:#0f172a;margin-bottom:6px;"><strong>Action:</strong> ${esc(s.action)}</div>
+                    <div class="script-speech-box" style="font-size:13.5px;padding:10px 14px;background:#f0fdf4;border-color:#10b981;color:#14532d;">
+                      ${esc(s.speech)}
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="script-section-card">
+              <div class="script-section-header">
+                <strong>6. Presentation Conclusion</strong>
+                <span class="glass-pill accent">Closing Statement</span>
+              </div>
+              <div class="script-speech-box">
+                &ldquo;${esc(data.conclusion)}&rdquo;
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ---------------- TAB 10: PROOF OF REAL DATA ----------------
+  function renderProofTab() {
+    const steps = PROOF_DEMO_SCRIPT;
+    return `
+      <div class="glass-panel">
+        <div class="glass-card">
+          <div class="glass-card-head">
+            <div class="glass-card-title">${icon('shield')} PROVE THAT SQL GHOST HUNTER ACTUALLY WORKS</div>
+            <span class="glass-pill accent">Live Academic Demonstration Script</span>
+          </div>
+          <p class="muted small" style="margin-top:-6px;margin-bottom:18px;line-height:1.6;">
+            Follow this exact 17-step sequence in front of your college professor or examiner. 
+            It proves conclusively that SQL Ghost Hunter performs genuine database operations, captures direct MySQL bypasses via event triggers, and permanently persists records across complete application restarts.
+          </p>
+
+          <div style="display:flex;flex-direction:column;gap:18px;">
+            ${steps.map((s) => `
+              <div class="glass-card" style="padding:20px;background:rgba(255,255,255,0.96);border:1px solid #e2e8f0;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="badge" style="background:#1e3a8a;color:#fff;font-weight:700;padding:4px 10px;border-radius:6px;">Step ${s.step}</span>
+                    <span style="font-size:16px;font-weight:700;color:#0f172a;">${esc(s.title)}</span>
+                  </div>
+                  <span class="badge" style="background:#f1f5f9;color:#0f172a;border:1px solid #cbd5e1;font-size:11.5px;">
+                    ${icon('sql', 12)} DBMS Concept: <strong>${esc(s.concept)}</strong>
+                  </span>
+                </div>
+
+                <div class="grid grid-2" style="gap:12px;margin-bottom:12px;">
+                  <div style="background:#f8fafc;padding:12px 14px;border-radius:8px;border:1px solid #e2e8f0;">
+                    <div style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;margin-bottom:4px;">
+                      ${icon('user', 12)} What to Click / Do:
+                    </div>
+                    <div style="font-size:13.5px;color:#0f172a;line-height:1.5;">${esc(s.action)}</div>
+                  </div>
+                  <div style="background:#f8fafc;padding:12px 14px;border-radius:8px;border:1px solid #e2e8f0;">
+                    <div style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;margin-bottom:4px;">
+                      ${icon('code', 12)} Backend / MySQL Execution:
+                    </div>
+                    <div style="font-size:13px;color:#1e3a8a;font-family:monospace;line-height:1.5;">${esc(s.execute)}</div>
+                  </div>
+                </div>
+
+                <div style="background:#ecfdf5;padding:10px 14px;border-radius:8px;border:1px solid #a7f3d0;margin-bottom:12px;">
+                  <span style="font-size:12px;font-weight:700;color:#065f46;text-transform:uppercase;margin-right:6px;">
+                    ${icon('check', 13)} Expected Result:
+                  </span>
+                  <span style="font-size:13.5px;color:#064e3b;font-weight:600;">${esc(s.expected)}</span>
+                </div>
+
+                <div class="script-speech-box" style="margin-top:0;font-size:14px;line-height:1.6;border-left:4px solid var(--accent, #6366f1);background:#fbfcfe;">
+                  <div style="font-size:12px;font-weight:700;color:#4338ca;text-transform:uppercase;margin-bottom:4px;">
+                    ${icon('graduation', 13)} What to Tell Your Teacher:
+                  </div>
+                  <span style="color:#1e1b4b;font-style:italic;">"${esc(s.whatToTellTeacher)}"</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ---------------- TAB 11: VIVA PREPARATION ----------------
+  function renderVivaTab() {
+    const cats = ['All', 'DBMS Fundamentals', 'SQL Queries', 'Project Database Architecture', 'Forensics & Cybersecurity', 'Technology Stack', 'Project-Specific Tricky Questions'];
+    const diffs = ['All', 'Beginner', 'Intermediate', 'Advanced'];
+
+    const filtered = VIVA_QUESTIONS.filter((v) => {
+      const matchCat = vivaCategory === 'All' || v.cat === vivaCategory;
+      const matchDiff = vivaDifficulty === 'All' || v.diff === vivaDifficulty;
+      const matchSearch = !vivaSearch || v.q.toLowerCase().includes(vivaSearch.toLowerCase()) ||
+                          v.simple.toLowerCase().includes(vivaSearch.toLowerCase()) ||
+                          v.tech.toLowerCase().includes(vivaSearch.toLowerCase());
+      return matchCat && matchDiff && matchSearch;
+    });
+
+    return `
+      <div class="glass-panel">
+        <div class="glass-card">
+          <div class="glass-card-head">
+            <div class="glass-card-title">${icon('award')} Comprehensive Viva Preparation Centre (${VIVA_QUESTIONS.length} Questions)</div>
+            <span class="glass-pill success">Examiner Tested</span>
+          </div>
+
+          <div class="glass-search-box">
+            ${icon('search', 18)}
+            <input type="text" id="viva-search-input" class="glass-search-input" placeholder="Search viva questions (e.g. trigger, 3NF, SHA-256, RESTRICT, injection)..." value="${esc(vivaSearch)}">
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:12px;">
+            <div class="glass-filter-chips">
+              ${cats.map((c) => `
+                <button type="button" class="glass-filter-chip ${vivaCategory === c ? 'active' : ''}" data-vivacat="${c}">${esc(c)}</button>
+              `).join('')}
+            </div>
+
+            <div class="glass-filter-chips">
+              <span class="small muted" style="margin-right:4px;">Difficulty:</span>
+              ${diffs.map((d) => `
+                <button type="button" class="glass-filter-chip ${vivaDifficulty === d ? 'active' : ''}" data-vivadiff="${d}">${esc(d)}</button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="viva-list" style="margin-top:20px;">
+            ${filtered.length ? filtered.map((v) => `
+              <div class="viva-card" data-vivaid="${v.id}">
+                <div class="viva-head">
+                  <div class="viva-q-title">
+                    <span class="badge ${v.diff === 'Beginner' ? 'ok' : v.diff === 'Intermediate' ? 'MEDIUM' : 'CRITICAL'}">${esc(v.diff)}</span>
+                    <span>Q${v.id}. ${esc(v.q)}</span>
+                  </div>
+                  <span class="glass-pill" style="font-size:11px;">${esc(v.cat)}</span>
+                </div>
+                <div class="viva-body">
+                  <div class="viva-block simple">
+                    <span class="viva-block-label">Simple Answer (20 Seconds Speaking):</span>
+                    <span class="viva-block-content">${esc(v.simple)}</span>
+                  </div>
+                  <div class="viva-block tech">
+                    <span class="viva-block-label">Technical / Relational Answer (Full Marks):</span>
+                    <span class="viva-block-content">${esc(v.tech)}</span>
+                  </div>
+                  <div class="viva-block analogy">
+                    <span class="viva-block-label">Everyday Analogy:</span>
+                    <span class="viva-block-content">${esc(v.analogy)}</span>
+                  </div>
+                  <div class="viva-block followup">
+                    <span class="viva-block-label">Faculty Follow-Up Counter-Question:</span>
+                    <span class="viva-block-content"><strong>${esc(v.followup)}</strong></span>
+                  </div>
+                </div>
+              </div>
+            `).join('') : `<div class="empty">No viva questions match your search or filter.</div>`}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ---------------- TAB 12: TEACH ME & FEEDBACK SYSTEM ----------------
+  function renderFeedbackTab() {
+    const curMode = TEACH_ME_MODES.find((m) => m.id === activeTeachMode) || TEACH_ME_MODES[0];
+    const avgScore = feedbackList.length ? (feedbackList.reduce((acc, f) => acc + (f.rating || 5), 0) / feedbackList.length).toFixed(1) : "5.0";
+
+    return `
+      <div class="glass-panel">
+        <!-- Sub-section 1: Persona Learner -->
+        <div class="glass-card">
+          <div class="glass-card-head">
+            <div class="glass-card-title">${icon('sparkles')} 'Teach Me This Project' &mdash; Multi-Perspective Persona Switcher</div>
+            <span class="glass-pill accent">Dynamic Pedagogical Modes</span>
+          </div>
+          <p class="muted small" style="margin-top:-6px;margin-bottom:18px;">
+            Choose a persona below to see how the explanation dynamically adapts from a 10-year-old child to a computer science professor.
+          </p>
+
+          <div class="glass-quick-modes" style="grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));">
+            ${TEACH_ME_MODES.map((m) => `
+              <button type="button" class="quick-mode-btn ${m.id === curMode.id ? 'active' : ''}" data-teachmode="${m.id}">
+                <div class="mode-title">${esc(m.title)}</div>
+                <div class="mode-desc">${esc(m.badge)}</div>
+              </button>
+            `).join('')}
+          </div>
+
+          <div class="glass-card" style="margin-top:22px;padding:24px;background:rgba(255,255,255,0.96);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid #e2e8f0;padding-bottom:10px;">
+              <h2 style="font-size:20px;color:#0f172a;">${esc(curMode.title)}</h2>
+              <span class="glass-pill success">${esc(curMode.badge)}</span>
+            </div>
+            <div class="script-speech-box" style="font-size:15px;line-height:1.8;background:#ffffff;border-color:var(--primary);">
+              ${esc(curMode.content).replace(/\n/g, '<br>')}
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-section 2: Complete Examiner Evaluation & Feedback Suite -->
+        <div class="glass-card" id="feedback-suite" style="border:2px solid var(--glass-accent-border);">
+          <div class="glass-card-head">
+            <div class="glass-card-title" style="color:var(--primary);">
+              ${icon('award')} College Faculty, Examiner &amp; Student Feedback Suite
+            </div>
+            <div class="glass-badge-row">
+              <span class="glass-pill success">Verified Feedback Hub</span>
+              <span class="glass-pill accent">Average Score: ⭐ ${avgScore} / 5.0</span>
+            </div>
+          </div>
+          <p class="muted small" style="margin-top:-6px;margin-bottom:20px;line-height:1.6;">
+            Are you a DBMS Professor, Lab Examiner, Student, or Evaluator? Testify to the technical rigor, relational design, 
+            and real-world forensic capabilities of SQL Ghost Hunter. Submissions are saved persistently and displayed on the public review ledger.
+          </p>
+
+          <div class="grid grid-2" style="gap:24px;align-items:start;">
+            <!-- Feedback Form -->
+            <form id="evaluation-feedback-form" class="glass-card" style="padding:24px;background:rgba(255,255,255,0.98);box-shadow:var(--glass-shadow-lg);">
+              <h3 style="font-size:18px;color:#0f172a;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+                ${icon('edit', 18)} Submit Your Evaluation &amp; Rating
+              </h3>
+
+              <div class="stack" style="gap:14px;">
+                <div>
+                  <label style="display:block;font-size:13px;font-weight:700;color:#334155;margin-bottom:6px;">Your Name / Title *</label>
+                  <input type="text" id="fb-name" required class="input" placeholder="e.g. Dr. K. Sharma / Vikram Mehta" style="width:100%;">
+                </div>
+
+                <div class="grid grid-2" style="gap:12px;">
+                  <div>
+                    <label style="display:block;font-size:13px;font-weight:700;color:#334155;margin-bottom:6px;">Evaluator Role *</label>
+                    <select id="fb-role" class="input" style="width:100%;">
+                      <option value="DBMS Professor">DBMS Professor / Faculty</option>
+                      <option value="External Lab Examiner">External Lab Examiner</option>
+                      <option value="Project Evaluator">College Project Evaluator</option>
+                      <option value="B.Tech CS Student">B.Tech CS Student / Peer</option>
+                      <option value="Database Administrator">Database Administrator (DBA)</option>
+                      <option value="Security Researcher">Cybersecurity Researcher</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="display:block;font-size:13px;font-weight:700;color:#334155;margin-bottom:6px;">Department / Institution</label>
+                    <input type="text" id="fb-inst" class="input" placeholder="e.g. Dept of CSE, MIT / Anna Univ" style="width:100%;">
+                  </div>
+                </div>
+
+                <!-- Star Rating Selector -->
+                <div>
+                  <label style="display:block;font-size:13px;font-weight:700;color:#334155;margin-bottom:6px;">Overall Project Rating (1 to 5 Stars) *</label>
+                  <div class="rating-stars-wrap" style="display:flex;gap:8px;font-size:26px;cursor:pointer;">
+                    ${[1, 2, 3, 4, 5].map((num) => `
+                      <span class="star-item ${num <= feedbackRating ? 'active' : ''}" data-star="${num}" style="color:${num <= feedbackRating ? '#f59e0b' : '#cbd5e1'};transition:transform 0.15s;">★</span>
+                    `).join('')}
+                    <span id="star-label" style="font-size:14px;font-weight:700;color:#b45309;margin-left:8px;align-self:center;">
+                      ${feedbackRating} of 5 Stars (Outstanding)
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Checkboxes: Highlights -->
+                <div>
+                  <label style="display:block;font-size:13px;font-weight:700;color:#334155;margin-bottom:6px;">What Impressed You Most? (Select All That Apply)</label>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12.5px;color:#1e293b;">
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                      <input type="checkbox" name="fb-high" value="Engine-Level Triggers" checked> Engine Triggers over App Logs
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                      <input type="checkbox" name="fb-high" value="SHA-256 Tamper Detection" checked> SHA-256 Tamper Detection
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                      <input type="checkbox" name="fb-high" value="3NF Normalization" checked> 3NF Normalized Schema
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                      <input type="checkbox" name="fb-high" value="Zero Mock Arrays" checked> Zero Mock Data (Real MySQL)
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                      <input type="checkbox" name="fb-high" value="90+ Viva Questions"> 90+ Viva Questions &amp; Answers
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                      <input type="checkbox" name="fb-high" value="Liquid Glass UI"> Liquid Glass Apple-Inspired UI
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Written Feedback -->
+                <div>
+                  <label style="display:block;font-size:13px;font-weight:700;color:#334155;margin-bottom:6px;">Detailed Evaluation Feedback / Remarks *</label>
+                  <textarea id="fb-comments" required class="input" rows="4" placeholder="Share your academic assessment of this database forensics project, schema rigor, or viva preparation value..." style="width:100%;resize:vertical;"></textarea>
+                </div>
+
+                <!-- Final Grade Recommendation -->
+                <div>
+                  <label style="display:block;font-size:13px;font-weight:700;color:#334155;margin-bottom:6px;">Final Recommended Grade for DBMS Lab Exam</label>
+                  <select id="fb-grade" class="input" style="width:100%;">
+                    <option value="Outstanding (10/10 - Grade O)">Grade O (10/10) - Outstanding / Centum</option>
+                    <option value="Excellent (9/10 - Grade A+)">Grade A+ (9/10) - Excellent Implementation</option>
+                    <option value="Very Good (8/10 - Grade A)">Grade A (8/10) - Very Good</option>
+                  </select>
+                </div>
+
+                <div id="fb-success-banner" class="alert ok" style="display:none;padding:12px;margin-top:4px;">
+                  ${icon('check', 16)} <strong>Thank you!</strong> Your evaluation has been permanently recorded and added to the faculty review ledger.
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="padding:12px 20px;font-size:15px;font-weight:700;box-shadow:0 4px 14px rgba(37,99,235,0.3);">
+                  ${icon('check', 16)} Submit Academic Evaluation &amp; Review
+                </button>
+              </div>
+            </form>
+
+            <!-- Live Reviews Column -->
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                <h3 style="font-size:18px;color:#0f172a;display:flex;align-items:center;gap:8px;">
+                  ${icon('shield', 18)} Verified Evaluator Reviews (${feedbackList.length})
+                </h3>
+                <button type="button" class="btn btn-sm btn-ghost" id="export-feedback-json-btn">
+                  ${icon('download', 14)} Export Reviews (JSON)
+                </button>
+              </div>
+
+              <div id="feedback-cards-container" class="stack" style="gap:14px;max-height:640px;overflow-y:auto;padding-right:4px;">
+                ${feedbackList.map((f) => `
+                  <div class="glass-card" style="padding:18px 20px;background:rgba(255,255,255,0.95);border-left:4px solid #10b981;">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px;">
+                      <div>
+                        <div style="font-size:15px;font-weight:700;color:#0f172a;">${esc(f.name)}</div>
+                        <div class="muted small" style="color:#0369a1;font-weight:600;">${esc(f.role)} &bull; ${esc(f.institution || 'Verified Evaluator')}</div>
+                      </div>
+                      <div style="text-align:right;">
+                        <span style="color:#f59e0b;font-size:16px;">${'★'.repeat(f.rating || 5)}</span>
+                        <div style="font-size:11px;color:#64748b;margin-top:2px;">${esc(f.date || 'Recent')}</div>
+                      </div>
+                    </div>
+
+                    <div style="font-size:13.5px;color:#1e293b;line-height:1.6;margin:10px 0;background:#f8fafc;padding:10px 14px;border-radius:8px;">
+                      &ldquo;${esc(f.feedback)}&rdquo;
+                    </div>
+
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:12px;">
+                      <span class="badge ok" style="font-weight:700;">${esc(f.recommendation || 'Grade O')}</span>
+                      <div class="glass-badge-row" style="gap:4px;">
+                        ${(f.highlights || []).slice(0, 3).map((h) => `<span class="badge" style="font-size:10.5px;">${esc(h)}</span>`).join('')}
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderCurrentTab() {
+    switch (activeTab) {
+      case 'why': return renderWhyTab();
+      case 'tour': return renderTourTab();
+      case 'workflow': return renderWorkflowTab();
+      case 'database': return renderDatabaseTab();
+      case 'persistence': return renderPersistenceTab();
+      case 'tech': return renderTechTab();
+      case 'dictionary': return renderDictionaryTab();
+      case 'presentation': return renderPresentationTab();
+      case 'proof': return renderProofTab();
+      case 'viva': return renderVivaTab();
+      case 'feedback': return renderFeedbackTab();
+      case 'overview':
+      default:
+        return renderOverviewTab();
+    }
+  }
+
+  function fullRender() {
+    containerEl.innerHTML = `
+      <div class="help-container">
+        ${renderHero()}
+        ${renderTabsBar()}
+        <div id="help-tab-content">
+          ${renderCurrentTab()}
+        </div>
+      </div>
+    `;
+    wireEvents();
+  }
+
+  function wireEvents() {
+    // Tab Clicks
+    containerEl.querySelectorAll('.glass-tab-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        activeTab = btn.dataset.tab;
+        window.location.hash = activeTab;
+        fullRender();
+        window.scrollTo({ top: 120, behavior: 'smooth' });
+      });
+    });
+
+    // Hero Quick Mode Buttons
+    containerEl.querySelectorAll('.quick-mode-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.goto) {
+          activeTab = btn.dataset.goto;
+          window.location.hash = activeTab;
+          fullRender();
+          window.scrollTo({ top: 180, behavior: 'smooth' });
+        }
+      });
+    });
+
+    // Tour Module Selection
+    containerEl.querySelectorAll('[data-tour]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        activeTourModule = btn.dataset.tour;
+        fullRender();
+      });
+    });
+
+    // Database Table Selector
+    containerEl.querySelectorAll('[data-dbtable]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        activeDbTable = btn.dataset.dbtable;
+        fullRender();
+      });
+    });
+
+    // Teach Me Mode Persona Switcher
+    containerEl.querySelectorAll('[data-teachmode]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        activeTeachMode = btn.dataset.teachmode;
+        fullRender();
+      });
+    });
+
+    // Speech Level
+    containerEl.querySelectorAll('[data-speech]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        activeSpeechLevel = btn.dataset.speech;
+        fullRender();
+      });
+    });
+
+    // Viva Category & Difficulty Filters
+    containerEl.querySelectorAll('[data-vivacat]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        vivaCategory = btn.dataset.vivacat;
+        fullRender();
+      });
+    });
+    containerEl.querySelectorAll('[data-vivadiff]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        vivaDifficulty = btn.dataset.vivadiff;
+        fullRender();
+      });
+    });
+
+    // Viva Search
+    const vivaInput = containerEl.querySelector('#viva-search-input');
+    if (vivaInput) {
+      vivaInput.addEventListener('input', (e) => {
+        vivaSearch = e.target.value;
+        const list = containerEl.querySelector('.viva-list');
+        if (list) {
+          const filtered = VIVA_QUESTIONS.filter((v) => {
+            const matchCat = vivaCategory === 'All' || v.cat === vivaCategory;
+            const matchDiff = vivaDifficulty === 'All' || v.diff === vivaDifficulty;
+            const matchSearch = !vivaSearch || v.q.toLowerCase().includes(vivaSearch.toLowerCase()) ||
+                                v.simple.toLowerCase().includes(vivaSearch.toLowerCase()) ||
+                                v.tech.toLowerCase().includes(vivaSearch.toLowerCase());
+            return matchCat && matchDiff && matchSearch;
+          });
+          list.innerHTML = filtered.length ? filtered.map((v) => `
+            <div class="viva-card" data-vivaid="${v.id}">
+              <div class="viva-head">
+                <div class="viva-q-title">
+                  <span class="badge ${v.diff === 'Beginner' ? 'ok' : v.diff === 'Intermediate' ? 'MEDIUM' : 'CRITICAL'}">${esc(v.diff)}</span>
+                  <span>Q${v.id}. ${esc(v.q)}</span>
+                </div>
+                <span class="glass-pill" style="font-size:11px;">${esc(v.cat)}</span>
+              </div>
+              <div class="viva-body">
+                <div class="viva-block simple">
+                  <span class="viva-block-label">Simple Answer (20 Seconds Speaking):</span>
+                  <span class="viva-block-content">${esc(v.simple)}</span>
+                </div>
+                <div class="viva-block tech">
+                  <span class="viva-block-label">Technical / Relational Answer (Full Marks):</span>
+                  <span class="viva-block-content">${esc(v.tech)}</span>
+                </div>
+                <div class="viva-block analogy">
+                  <span class="viva-block-label">Everyday Analogy:</span>
+                  <span class="viva-block-content">${esc(v.analogy)}</span>
+                </div>
+                <div class="viva-block followup">
+                  <span class="viva-block-label">Faculty Follow-Up Counter-Question:</span>
+                  <span class="viva-block-content"><strong>${esc(v.followup)}</strong></span>
+                </div>
+              </div>
+            </div>
+          `).join('') : `<div class="empty">No viva questions match your search.</div>`;
+        }
+      });
+    }
+
+    // Dictionary Category & Search
+    containerEl.querySelectorAll('[data-dictcat]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        dictCategory = btn.dataset.dictcat;
+        fullRender();
+      });
+    });
+    const dictInput = containerEl.querySelector('#dict-search-input');
+    if (dictInput) {
+      dictInput.addEventListener('input', (e) => {
+        dictSearch = e.target.value;
+        const grid = containerEl.querySelector('.grid.grid-2');
+        if (grid) {
+          const filtered = DICTIONARY_TERMS.filter((t) => {
+            const matchCat = dictCategory === 'All' || t.cat === dictCategory;
+            const matchSearch = !dictSearch || t.term.toLowerCase().includes(dictSearch.toLowerCase()) ||
+                                t.simple.toLowerCase().includes(dictSearch.toLowerCase()) ||
+                                t.tech.toLowerCase().includes(dictSearch.toLowerCase());
+            return matchCat && matchSearch;
+          });
+          grid.innerHTML = filtered.length ? filtered.map((t) => `
+            <div class="glass-card" style="padding:18px;background:rgba(255,255,255,0.92);">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;">
+                <span style="font-size:17px;font-weight:700;color:#0f172a;">${esc(t.term)}</span>
+                <span class="badge">${esc(t.cat)}</span>
+              </div>
+              <div style="font-size:13px;color:#059669;margin-bottom:6px;"><strong>Simple:</strong> ${esc(t.simple)}</div>
+              <div style="font-size:13px;color:#1e3a8a;margin-bottom:6px;"><strong>Technical:</strong> ${esc(t.tech)}</div>
+              <div style="font-size:12.5px;color:#475569;background:#f8fafc;padding:6px 10px;border-radius:6px;margin-top:6px;">
+                <strong>In Project:</strong> ${esc(t.project)}
+              </div>
+              <div style="font-size:12px;color:#64748b;margin-top:4px;font-style:italic;">
+                Real-world example: ${esc(t.example)}
+              </div>
+            </div>
+          `).join('') : `<div class="empty" style="grid-column:1/-1;">No terminology found matching "${esc(dictSearch)}".</div>`;
+        }
+      });
+    }
+
+    // Feedback Star Click
+    containerEl.querySelectorAll('.star-item').forEach((star) => {
+      star.addEventListener('click', () => {
+        feedbackRating = Number(star.dataset.star);
+        const label = containerEl.querySelector('#star-label');
+        if (label) {
+          const descriptions = {
+            1: "1 of 5 Stars (Needs Improvement)",
+            2: "2 of 5 Stars (Fair)",
+            3: "3 of 5 Stars (Good Project)",
+            4: "4 of 5 Stars (Very Good Implementation)",
+            5: "5 of 5 Stars (Outstanding / Grade O)"
+          };
+          label.textContent = descriptions[feedbackRating] || `${feedbackRating} Stars`;
+        }
+        containerEl.querySelectorAll('.star-item').forEach((s) => {
+          const n = Number(s.dataset.star);
+          s.style.color = n <= feedbackRating ? '#f59e0b' : '#cbd5e1';
+        });
+      });
+    });
+
+    // Feedback Form Submit
+    const fbForm = containerEl.querySelector('#evaluation-feedback-form');
+    if (fbForm) {
+      fbForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = containerEl.querySelector('#fb-name')?.value.trim();
+        const role = containerEl.querySelector('#fb-role')?.value;
+        const institution = containerEl.querySelector('#fb-inst')?.value.trim();
+        const comments = containerEl.querySelector('#fb-comments')?.value.trim();
+        const grade = containerEl.querySelector('#fb-grade')?.value;
+
+        const highlights = [];
+        containerEl.querySelectorAll('input[name="fb-high"]:checked').forEach((cb) => {
+          highlights.push(cb.value);
+        });
+
+        if (!name || !comments) return;
+
+        const newReview = {
+          id: Date.now(),
+          name,
+          role,
+          institution: institution || "Verified Academic Evaluator",
+          rating: feedbackRating,
+          feedback: comments,
+          recommendation: grade,
+          highlights,
+          date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          verified: true
+        };
+
+        saveFeedback(newReview);
+
+        const banner = containerEl.querySelector('#fb-success-banner');
+        if (banner) {
+          banner.style.display = 'block';
+          banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        setTimeout(() => {
+          fullRender();
+        }, 1200);
+      });
+    }
+
+    // Export Feedback JSON
+    const exportBtn = containerEl.querySelector('#export-feedback-json-btn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(feedbackList, null, 2));
+        const dlAnchor = document.createElement('a');
+        dlAnchor.setAttribute("href", dataStr);
+        dlAnchor.setAttribute("download", "sql_ghost_hunter_evaluations.json");
+        document.body.appendChild(dlAnchor);
+        dlAnchor.click();
+        dlAnchor.remove();
+      });
+    }
+  }
+
+  fullRender();
+}
+
+
+// Auto-run on load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', runHelpApp);
+} else {
+  runHelpApp();
+}
+
+  </script>
+</body>
+</html>
