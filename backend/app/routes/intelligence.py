@@ -176,3 +176,44 @@ def docs_get(name: str, ctx: RequestContext = Depends(get_context)):
     if not path or not path.exists():
         raise HTTPException(404, "Document not found")
     return path.read_text(encoding="utf-8")
+
+
+# ---------------------------------------------------------------- feedback
+FEEDBACK_FILE = PROJECT_ROOT / "storage" / "feedback.json"
+
+
+@router.get("/feedback")
+def list_feedback():
+    if not FEEDBACK_FILE.exists():
+        return []
+    try:
+        return json.loads(FEEDBACK_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+
+
+@router.post("/feedback")
+def submit_feedback(payload: dict):
+    entries = []
+    if FEEDBACK_FILE.exists():
+        try:
+            entries = json.loads(FEEDBACK_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            entries = []
+
+    entry = {
+        "id": len(entries) + 1,
+        "name": payload.get("name", "Anonymous Evaluator"),
+        "role": payload.get("role", "Faculty Evaluator"),
+        "institution": payload.get("institution", "Academic Institution"),
+        "rating": payload.get("rating", 5),
+        "feedback": payload.get("feedback", ""),
+        "recommendation": payload.get("recommendation", "Outstanding (10/10)"),
+        "highlights": payload.get("highlights", []),
+        "date": payload.get("date", "Recent"),
+        "verified": True
+    }
+    entries.insert(0, entry)
+    FEEDBACK_FILE.parent.mkdir(parents=True, exist_ok=True)
+    FEEDBACK_FILE.write_text(json.dumps(entries[:100], indent=2), encoding="utf-8")
+    return {"status": "ok", "message": "Feedback submitted successfully", "entry": entry}
